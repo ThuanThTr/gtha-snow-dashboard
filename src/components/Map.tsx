@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
+import { Map as MapLibreMap, type MapMouseEvent, setWorkerUrl } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { MunicipalRecord } from "@/lib/types";
 import {
@@ -43,6 +45,14 @@ interface Hover {
 
 const PAD = 16;
 const TOOLTIP_W = 300;
+const LEGEND_H = 64;
+
+// Carto Positron (no labels) vector style. Key comes from NEXT_PUBLIC_CARTO_API_KEY in .env.local.
+const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+const STYLE_URL = `https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json${
+  CARTO_KEY ? `?key=${encodeURIComponent(CARTO_KEY)}` : ""
+}`;
+const FIT_PADDING = { top: PAD, right: PAD, left: PAD, bottom: PAD + LEGEND_H };
 
 export default function GthaMap({
   geo,
@@ -55,13 +65,20 @@ export default function GthaMap({
   onSelect,
 }: MapProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [hover, setHover] = useState<Hover | null>(null);
+  const [mapInstance, setMapInstance] = useState<MapLibreMap | null>(null);
+  // Bumped on every map move so the SVG overlay is re-projected.
+  const [view, setView] = useState(0);
 
-  // Keep the latest callbacks/data in refs so D3 event handlers never go stale.
+  // Keep the latest callbacks in refs so map event handlers never go stale.
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+
+  const bounds = useMemo(() => d3.geoBounds(geo) as [[number, number], [number, number]], [geo]);
+  const ready = size.w > 0 && size.h > 0;
 
   // ---- responsive sizing ----
   useEffect(() => {
@@ -75,18 +92,81 @@ export default function GthaMap({
     return () => ro.disconnect();
   }, []);
 
-  // ---- projection & path generator (recomputed on resize only) ----
+  // ---- MapLibre basemap (pan / zoom / wheel / pinch handled here) ----
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!ready || !el) return;
+    // MapLibre cannot find its worker file under Next's bundler, so serve it from /public.
+    setWorkerUrl("/maplibre-gl-worker.mjs");
+    const map = new MapLibreMap({
+      container: el,
+      style: STYLE_URL,
+      bounds,
+      fitBoundsOptions: { padding: FIT_PADDING },
+      dragRotate: false,
+      pitchWithRotate: false,
+      attributionControl: { compact: true },
+    });
+    const bump = () => setView((v) => v + 1);
+    map.on("load", bump);
+    map.on("move", bump);
+    map.on("resize", bump);
+    map.on("dragstart", () => setHover(null));
+    setMapInstance(map);
+    return () => {
+      map.remove();
+      setMapInstance(null);
+    };
+  }, [ready, bounds]);
+
+  // ---- projection: MapLibre's view drives the SVG overlay ----
   const path = useMemo(() => {
-    if (!size.w || !size.h) return null;
-    const projection = d3.geoMercator().fitExtent(
-      [
-        [PAD, PAD],
-        [size.w - PAD, size.h - PAD - 64], // leave room for the legend
-      ],
-      geo,
+    if (!mapInstance) return null;
+    return d3.geoPath(
+      d3.geoTransform({
+        point(x, y) {
+          const p = mapInstance.project([x, y]);
+          this.stream.point(p.x, p.y);
+        },
+      }),
     );
-    return d3.geoPath(projection);
-  }, [geo, size.w, size.h]);
+  }, [mapInstance, view]);
+
+  // ---- hover & click on the map, using point-in-polygon against each municipality ----
+  useEffect(() => {
+    if (!mapInstance) return;
+    const featureAt = (p: { lng: number; lat: number }) =>
+      geo.features.find((f) => d3.geoContains(f, [p.lng, p.lat])) as MunFeature | undefined;
+
+    const onMove = (e: MapMouseEvent) => {
+      if (mapInstance.isMoving()) return setHover(null);
+      const f = featureAt(e.lngLat);
+      mapInstance.getCanvas().style.cursor = f ? "pointer" : "";
+      setHover(f ? { munId: f.properties.munId, x: e.point.x, y: e.point.y } : null);
+    };
+    const onClick = (e: MapMouseEvent) => {
+      const f = featureAt(e.lngLat);
+      if (f) onSelectRef.current(f.properties.munId);
+    };
+    const onOut = () => {
+      mapInstance.getCanvas().style.cursor = "";
+      setHover(null);
+    };
+
+    mapInstance.on("mousemove", onMove);
+    mapInstance.on("click", onClick);
+    mapInstance.on("mouseout", onOut);
+    return () => {
+      mapInstance.off("mousemove", onMove);
+      mapInstance.off("click", onClick);
+      mapInstance.off("mouseout", onOut);
+    };
+  }, [mapInstance, geo]);
+
+  // ---- zoom buttons ----
+  const zoomIn = () => mapInstance?.zoomIn({ duration: 300 });
+  const zoomOut = () => mapInstance?.zoomOut({ duration: 300 });
+  const resetZoom = () => mapInstance?.fitBounds(bounds, { padding: FIT_PADDING, duration: 300 });
 
   // ---- draw / update municipality shapes ----
   useEffect(() => {
@@ -106,7 +186,7 @@ export default function GthaMap({
         .attr("patternUnits", "userSpaceOnUse")
         .attr("patternTransform", "rotate(45)");
       p.append("rect").attr("width", 6).attr("height", 6).attr("fill", NO_DATA_FILL);
-      p.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 6).attr("stroke", "#c9c8c2").attr("stroke-width", 1.5);
+      p.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 6).attr("stroke", "#88aecf").attr("stroke-width", 1.5);
     }
 
     const shapes = root
@@ -120,19 +200,7 @@ export default function GthaMap({
       return v == null ? "url(#nodata-hatch)" : colorScale(v);
     };
 
-    const showAt = (event: PointerEvent | FocusEvent, d: MunFeature) => {
-      const wrap = wrapRef.current!.getBoundingClientRect();
-      let x: number;
-      let y: number;
-      if ("clientX" in event) {
-        x = event.clientX - wrap.left;
-        y = event.clientY - wrap.top;
-      } else {
-        [x, y] = path.centroid(d);
-      }
-      setHover({ munId: d.properties.munId, x, y });
-    };
-
+    // Pointer input is handled by the map (see above). These paths stay focusable for keyboard users.
     shapes
       .selectAll<SVGPathElement, MunFeature>("path")
       .data(geo.features as MunFeature[], (d) => d.properties.munId)
@@ -144,7 +212,6 @@ export default function GthaMap({
           .attr("stroke", "#ffffff")
           .attr("stroke-width", 1)
           .attr("stroke-linejoin", "round")
-          .style("cursor", "pointer")
           .style("outline", "none")
           .attr("fill", fillFor),
       )
@@ -153,11 +220,11 @@ export default function GthaMap({
         const v = recordsById.get(d.properties.munId)?.[metric];
         return `${d.properties.name}: ${METRIC_BY_KEY[metric].label} ${formatMetric(metric, v)}`;
       })
-      .on("pointerenter pointermove", (event: PointerEvent, d) => showAt(event, d))
-      .on("pointerleave", () => setHover(null))
-      .on("focus", (event: FocusEvent, d) => showAt(event, d))
+      .on("focus", (_e: FocusEvent, d) => {
+        const [x, y] = path.centroid(d);
+        setHover({ munId: d.properties.munId, x, y });
+      })
       .on("blur", () => setHover(null))
-      .on("click", (_e, d) => onSelectRef.current(d.properties.munId))
       .on("keydown", (event: KeyboardEvent, d) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -168,6 +235,38 @@ export default function GthaMap({
       .duration(450)
       .attr("fill", fillFor);
   }, [geo, path, recordsById, metric, colorScale]);
+
+  // ---- municipality name labels (above shapes, below hover/selection overlay) ----
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || !path) return;
+    const labels = d3
+      .select(svg)
+      .selectAll<SVGGElement, null>("g.labels")
+      .data([null])
+      .join("g")
+      .attr("class", "labels text-ink")
+      .attr("aria-hidden", "true")
+      .attr("pointer-events", "none");
+
+    labels
+      .selectAll<SVGTextElement, MunFeature>("text")
+      .data(geo.features as MunFeature[], (d) => d.properties.munId)
+      .join("text")
+      .attr("x", (d) => path.centroid(d)[0])
+      .attr("y", (d) => path.centroid(d)[1])
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.35em")
+      .attr("font-size", 10)
+      .attr("font-weight", 600)
+      .attr("fill", "currentColor")
+      // White halo keeps the names readable over both colours and hatching.
+      .attr("stroke", "#ffffff")
+      .attr("stroke-width", 3)
+      .attr("stroke-linejoin", "round")
+      .attr("paint-order", "stroke")
+      .text((d) => d.properties.name);
+  }, [geo, path]);
 
   // ---- overlay: hover outline + A/B selection outlines and badges ----
   useEffect(() => {
@@ -183,7 +282,7 @@ export default function GthaMap({
 
     const byId = new Map(geo.features.map((f) => [f.properties.munId, f as MunFeature]));
     const outlines = [
-      hover && { id: hover.munId, color: "#0b0b0b", width: 2, label: "" },
+      hover && { id: hover.munId, color: "#2f4d6a", width: 2, label: "" },
       selectedA && { id: selectedA, color: SERIES_A, width: 3, label: "A" },
       selectedB && { id: selectedB, color: SERIES_B, width: 3, label: "B" },
     ].filter((o): o is { id: string; color: string; width: number; label: string } => !!o && byId.has(o.id));
@@ -226,9 +325,47 @@ export default function GthaMap({
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
-      <svg ref={svgRef} width={size.w} height={size.h} role="img" aria-label={`Choropleth map of ${METRIC_BY_KEY[metric].label}, ${year}`} />
+      {/* MapLibre renders the basemap here; the SVG overlay sits on top and ignores the pointer. */}
+      {/* Inline style: MapLibre's CSS sets position:relative on this element, which would collapse it to zero height. */}
+      <div ref={containerRef} className="absolute inset-0" style={{ position: "absolute", inset: 0 }} />
+
+      <svg
+        ref={svgRef}
+        className="pointer-events-none absolute inset-0"
+        width={size.w}
+        height={size.h}
+        role="img"
+        aria-label={`Choropleth map of ${METRIC_BY_KEY[metric].label}, ${year}`}
+      />
 
       <Legend colorScale={colorScale} metric={metric} />
+
+      <div className="absolute right-3 top-3 z-20 flex flex-col overflow-hidden rounded-md border border-line bg-panel shadow">
+        <button
+          type="button"
+          onClick={zoomIn}
+          aria-label="Zoom in"
+          className="h-8 w-8 text-lg leading-none hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          onClick={zoomOut}
+          aria-label="Zoom out"
+          className="h-8 w-8 border-t border-line text-lg leading-none hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          onClick={resetZoom}
+          aria-label="Reset zoom"
+          className="h-8 w-8 border-t border-line text-xs hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+        >
+          ⟲
+        </button>
+      </div>
 
       {hover && (
         <div

@@ -1,19 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-surface: #fcfcfb;
+  /* "Winter Frost" palette: #E3F2FC #C8E0F4 #A9C8E6 #88AECF #587A9D #2F4D6A */
+  --color-surface: #f5faff;
   --color-panel: #ffffff;
-  --color-ink: #0b0b0b;
-  --color-ink-2: #52514e;
-  --color-ink-3: #8a8983;
-  --color-line: #e4e3df;
-  --color-nodata: #e9e8e4;
-  /* Sequential blue ramp (light → dark) for the choropleth */
-  --color-seq-1: #cde2fb;
-  --color-seq-2: #86b6ef;
-  --color-seq-3: #3987e5;
-  --color-seq-4: #1c5cab;
-  --color-seq-5: #0d366b;
+  --color-ink: #2f4d6a;
+  --color-ink-2: #587a9d;
+  --color-ink-3: #6f8aa3;
+  --color-line: #c8e0f4;
+  --color-nodata: #e3f2fc;
+  /* Sequential ramp (light → dark) for the choropleth and accents */
+  --color-seq-1: #c8e0f4;
+  --color-seq-2: #a9c8e6;
+  --color-seq-3: #88aecf;
+  --color-seq-4: #587a9d;
+  --color-seq-5: #2f4d6a;
   /* Comparison series */
   --color-series-a: #2a78d6;
   --color-series-b: #eb6834;
@@ -26,7 +27,46 @@ body {
   color: var(--color-ink);
 }
 
-/* Year slider */
+/* Year slider: snowflake thumb on a blue track. --fill is set from the component. */
 input[type="range"].year-slider {
-  accent-color: var(--color-seq-4);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].year-slider:focus-visible {
+  outline: 2px solid var(--color-seq-4);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+input[type="range"].year-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--color-seq-4) var(--fill, 0%), var(--color-line) var(--fill, 0%));
+}
+input[type="range"].year-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+input[type="range"].year-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-seq-4);
+}
+input[type="range"].year-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -12px;
+  border: 0;
+  background: url("/icons/snowy.png") center / contain no-repeat;
+}
+input[type="range"].year-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: url("/icons/snowy.png") center / contain no-repeat;
 }

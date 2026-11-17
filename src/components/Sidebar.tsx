@@ -1,78 +1,190 @@
 "use client";
 
-import * as d3 from "d3";
+import { useState } from "react";
 import type { MunicipalRecord, MetricsFile } from "@/lib/types";
-import { formatMetric, type MetricKey } from "@/lib/metrics";
 
 interface SidebarProps {
-  year: number;
   minYear: number;
   maxYear: number;
-  onYearChange: (year: number) => void;
-  recordsById: Map<string, MunicipalRecord>;
   assumptions: MetricsFile["assumptions"];
 }
 
-export default function Sidebar({ year, minYear, maxYear, onYearChange, recordsById, assumptions }: SidebarProps) {
-  const records = [...recordsById.values()];
-  const withSpend = records.filter((r) => r.totalExpenses != null);
+type TabKey = "overview" | "methodology";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "methodology", label: "Methodology" },
+];
+
+export default function Sidebar({ minYear, maxYear, assumptions }: SidebarProps) {
+  const [tab, setTab] = useState<TabKey>("overview");
 
   return (
     <div className="flex flex-col">
       {/* Title + year slider stay pinned while the text scrolls */}
       <div className="sticky top-0 z-10 border-b border-line bg-panel p-5">
-        <p className="text-xs font-medium tracking-wide text-ink-3 uppercase">GTHA Winter Maintenance</p>
-        <h1 className="mt-1 text-2xl font-semibold leading-tight">Snow plowing across the GTHA</h1>
+        <h1 className="text-2xl font-semibold leading-tight">
+          Winter Maintenance Across Greater Toronto and Hamilton Area (GTHA)
+        </h1>
 
-        <div className="mt-5">
-          <div className="flex items-baseline justify-between">
-            <label htmlFor="year" className="text-sm font-medium">
-              Year
-            </label>
-            <output htmlFor="year" className="text-2xl font-semibold tabular-nums">
-              {year}
-            </output>
-          </div>
-          <input
-            id="year"
-            type="range"
-            min={minYear}
-            max={maxYear}
-            step={1}
-            value={year}
-            onChange={(e) => onYearChange(Number(e.target.value))}
-            className="year-slider mt-2 w-full"
-          />
-          <div className="flex justify-between text-xs text-ink-3 tabular-nums">
-            <span>{minYear}</span>
-            <span>{maxYear}</span>
-          </div>
-          {withSpend.length < records.length && (
-            <p className="mt-2 text-xs text-ink-2">
-              {withSpend.length === 0
-                ? `No spending data reported for ${year} yet — only snowfall is shown.`
-                : `${records.length - withSpend.length} of ${records.length} municipalities have no spending data for ${year}.`}
-            </p>
-          )}
+        <div
+          role="tablist"
+          aria-label="Sidebar sections"
+          className="mt-5 flex rounded-md border border-line bg-panel p-0.5 text-sm"
+        >
+          {TABS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              id={`tab-${key}`}
+              aria-selected={tab === key}
+              aria-controls={`panel-${key}`}
+              onClick={() => setTab(key)}
+              className={`flex-1 rounded px-3 py-1.5 ${tab === key ? "bg-ink font-medium text-white" : "text-ink-2 hover:text-ink"}`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 p-5 text-sm leading-relaxed text-ink-2">
-        <Section title="About">
-          <p>
-            This dashboard compares how the 26 municipalities of the Greater Toronto and Hamilton Area (GTHA) spend on
-            winter road maintenance, relative to their road networks, populations and the snow they receive.
-          </p>
-          <p>
-            Pick a year with the slider, choose a metric above the map, hover a municipality for its full set of
-            indicators, and click two municipalities to compare them side by side.
-          </p>
-        </Section>
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        className="flex flex-col gap-6 p-5 text-sm leading-relaxed text-ink-2"
+      >
+        {tab === "overview" && (
+          <>
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium text-ink-2 [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-4">
+                <span className="flex items-center gap-1.5">
+                  <img src="/icons/touch-screen.png" alt="" aria-hidden="true" className="h-4 w-4 shrink-0" />
+                  How to Explore the Dashboard
+                </span>
+                <span aria-hidden="true" className="text-[10px] text-ink-3 transition-transform group-open:rotate-180">
+                  ▼
+                </span>
+              </summary>
+              <div className="mt-2 flex flex-col gap-1.5 text-xs">
+                <ol className="list-decimal space-y-0.5 pl-4">
+                  <li>Select a year using the slider to explore available historical data.</li>
+                  <li>Choose an indicator above the map to view spending or other municipal characteristics.</li>
+                  <li>Hover over a municipality to see its available indicators and supporting information.</li>
+                  <li>Select two municipalities to compare their results side by side.</li>
+                </ol>
+              </div>
+            </details>
 
-        <Section title={`Findings · ${year}`}>
-          <Findings records={records} year={year} />
-        </Section>
+            <Section title="Overview">
+              <p>
+                Canadian winters are long, cold and unpredictable. Every year, municipalities spend millions of dollars
+                keeping roads safe and accessible through snowstorms, freezing rain and icy conditions.
+              </p>
+              <p>
+                Winter maintenance is also one of the most visible municipal services. Whether roads are cleared in time
+                for the morning commute, how quickly neighbourhood streets are plowed, or how much taxpayers pay for these
+                services, winter operations affect people’s daily lives and often attract significant public attention.
+              </p>
+              <p>
+                But how much do municipalities actually spend on winter maintenance? And how does that spending compare
+                when we consider the size of their road networks, their populations and the snowfall they receive?
+              </p>
+              <p>
+                <mark className="bg-seq-2 px-0.5 text-ink">
+                  “This interactive dashboard explores winter road maintenance spending across 26 municipalities in the
+                  Greater Toronto and Hamilton Area (GTHA), using publicly available financial, geographic and demographic
+                  data.”
+                </mark>
+              </p>
+              <p>
+                Our goal is to bring together information that is often scattered across different sources and make it
+                easier to explore, understand and compare.
+              </p>
+              <p>
+                Rather than simply ranking municipalities by spending, the dashboard provides context for understanding
+                why winter maintenance costs may differ across the region.
+              </p>
+            </Section>
 
+
+            <details className="group">
+              <summary className="mb-2 flex cursor-pointer list-none items-center justify-between gap-3 rounded-md text-base font-semibold text-ink [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-4">
+                Data Limitations: What Should You Keep in Mind?
+                <span aria-hidden="true" className="text-sm text-ink-3 transition-transform group-open:rotate-180">
+                  ▼
+                </span>
+              </summary>
+              <div className="flex flex-col gap-2">
+              <p>
+                This dashboard is intended as an exploratory and benchmarking resource, not a definitive ranking of
+                municipal efficiency or performance.
+              </p>
+              <p>
+                While the Financial Information Return provides a consistent financial reporting framework, there are
+                important limitations in the supporting datasets.
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <div>
+                  <p className="font-medium text-ink">1. Road network information is not fully current.</p>
+                  <p>
+                    The road network analysis uses a 2019 ORN dataset. Road construction, development and changes to road
+                    ownership since that time may not be reflected.
+                  </p>
+                  <p>
+                    More importantly, road length within a municipal boundary is not necessarily equivalent to the road
+                    length that municipality is responsible for maintaining.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-medium text-ink">2. Population data represent a single point in time.</p>
+                  <p>
+                    Population figures are based on the 2021 Census. These figures do not capture subsequent growth and
+                    should not be interpreted as annual population estimates throughout the study period.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-medium text-ink">3. Financial data are not complete for every year.</p>
+                  <p>
+                    Some municipalities have missing FIR records for certain years, including within the most recent
+                    reporting periods. As a result, the number of municipalities represented may vary by year.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-medium text-ink">
+                    4. Municipalities do not all deliver winter maintenance in the same way.
+                  </p>
+                  <p>
+                    Winter maintenance responsibilities may be divided between upper-tier and lower-tier municipalities.
+                    Some municipalities primarily use in-house crews, while others rely more heavily on contractors.
+                  </p>
+                  <p>
+                    Differences in service levels, road characteristics, operating models and financial reporting can all
+                    influence reported expenditures.
+                  </p>
+                </div>
+              </div>
+
+              <p>
+                For these reasons, a municipality with higher spending per kilometre is not necessarily less efficient,
+                just as lower spending does not necessarily indicate better performance.
+              </p>
+              <p>
+                The dashboard is best used to identify patterns, raise questions and support further investigation,
+                rather than draw conclusions from any single indicator.
+              </p>
+              </div>
+            </details>
+          </>
+        )}
+
+        {tab === "methodology" && (
+          <>
         <Section title="Methods">
           <ol className="list-decimal space-y-1.5 pl-4">
             <li>Snowfall is reshaped from one column per year into one row per municipality per year.</li>
@@ -116,6 +228,8 @@ export default function Sidebar({ year, minYear, maxYear, onYearChange, recordsB
             </li>
           </ul>
         </Section>
+          </>
+        )}
       </div>
     </div>
   );
@@ -139,44 +253,3 @@ function Formula({ name, f }: { name: string; f: string }) {
   );
 }
 
-/** Auto-generated highlights for the selected year. */
-function Findings({ records, year }: { records: MunicipalRecord[]; year: number }) {
-  const top = (key: MetricKey, dir: "max" | "min") => {
-    const valid = records.filter((r) => r[key] != null);
-    if (!valid.length) return null;
-    return (dir === "max" ? d3.greatest : d3.least)(valid, (r) => r[key]!)!;
-  };
-
-  const items: { label: string; rec: MunicipalRecord | null; key: MetricKey }[] = [
-    { label: "Most snow moved per dollar", rec: top("tonsPerDollar", "max"), key: "tonsPerDollar" },
-    { label: "Highest spending per km", rec: top("spendPerKm", "max"), key: "spendPerKm" },
-    { label: "Highest spending per resident", rec: top("spendPerCapita", "max"), key: "spendPerCapita" },
-    { label: "Snowiest municipality", rec: top("avgSnowMm", "max"), key: "avgSnowMm" },
-  ];
-
-  const totalSpend = d3.sum(records, (r) => r.totalExpenses ?? 0);
-  const anySpend = records.some((r) => r.totalExpenses != null);
-
-  return (
-    <ul className="space-y-2">
-      {anySpend && (
-        <li>
-          Reporting municipalities spent{" "}
-          <strong className="font-semibold text-ink">{formatMetric("totalExpenses", totalSpend)}</strong> on winter
-          maintenance in {year}.
-        </li>
-      )}
-      {items.map(
-        ({ label, rec, key }) =>
-          rec && (
-            <li key={label} className="flex items-baseline justify-between gap-3">
-              <span>
-                {label}: <span className="font-medium text-ink">{rec.name}</span>
-              </span>
-              <span className="shrink-0 tabular-nums text-ink">{formatMetric(key, rec[key])}</span>
-            </li>
-          ),
-      )}
-    </ul>
-  );
-}

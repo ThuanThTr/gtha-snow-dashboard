@@ -1,0 +1,2011 @@
+{
+  "source": "GTHA Winter Maintenance Levels of Service_ Normalized Dataset for 30 Jurisdictions (2026).md",
+  "categories": [
+    {
+      "key": "expressway",
+      "label": "Expressways"
+    },
+    {
+      "key": "arterial",
+      "label": "Arterial roads"
+    },
+    {
+      "key": "collector",
+      "label": "Collector roads"
+    },
+    {
+      "key": "local",
+      "label": "Local / residential roads"
+    },
+    {
+      "key": "sidewalks",
+      "label": "Sidewalks"
+    },
+    {
+      "key": "cycling",
+      "label": "Cycling & multi-use trails"
+    },
+    {
+      "key": "windrows",
+      "label": "Driveway windrows"
+    },
+    {
+      "key": "busStops",
+      "label": "Bus stops & pedestrian crossings"
+    }
+  ],
+  "municipalities": [
+    {
+      "name": "Ajax",
+      "region": "Durham",
+      "responsibility": "Town: roads, sidewalks, trails, crossings; residents: sidewalks (24 hrs), windrows (paid seniors program)",
+      "sourceUrl": "https://www.ajax.ca/en/inside-townhall/winter-response-information.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Maintained by Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary; Secondary roads",
+          "salting": null,
+          "plowing": "Primary cleared \"while it is snowing\"",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Curb-to-curb",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential streets",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Town sidewalks (~150 km)",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Residents clear within 24 hrs",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Trails (~37 km)",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Snow Removal Program for Seniors & Qualified Residents",
+          "salting": null,
+          "plowing": "> 5 cm",
+          "completion": "Starts 24 hrs after snow stops",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Otherwise resident; $360.70 full / $41.13 sidewalk+windrow (2026–27)",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "School crossings (53)",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Aurora",
+      "region": "York",
+      "responsibility": "Town: roads incl. Yonge per Town table, all sidewalks, windrow pilot; Region: Regional roads",
+      "sourceUrl": "https://www.aurora.ca/town-services/roads-and-traffic/winter-maintenance/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Yonge Street",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "6 hrs",
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": "Clock basis not stated",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary roads",
+          "salting": null,
+          "plowing": "8 cm",
+          "completion": "16 hrs",
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Secondary roads",
+          "salting": null,
+          "plowing": "8 cm",
+          "completion": "24 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "All Town sidewalks & walkways",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Primary and school routes first",
+          "secondary": true
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Windrow Removal Pilot Program",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Brampton",
+      "region": "Peel",
+      "responsibility": "City: roads, priority/transit sidewalks; residents: sidewalks (11 am next day), windrows; Peel: Regional roads",
+      "sourceUrl": "https://www1.brampton.ca/EN/residents/Roads-and-Traffic/Maintenance-Programs/Snow-Clearing-Operations/Pages/Levels-of-Service.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Arterial roads",
+          "salting": "Salted when snowfall begins",
+          "plowing": "Plowed continuously",
+          "completion": "All roads 24 hrs after end of snowfall; 48 hrs after SWE",
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": "Regional roads by Peel",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Collector roads",
+          "salting": "During accumulation",
+          "plowing": "During accumulation",
+          "completion": "24 / 48 hrs",
+          "surface": "Centre Bare (bare to track bare)",
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Local roads and courts",
+          "salting": "Salt applied",
+          "plowing": "5 cm (single event)",
+          "completion": "24 / 48 hrs",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Primary-road, transit-route, City-property sidewalks",
+          "salting": null,
+          "plowing": null,
+          "completion": "~24 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Residents clear by 11 am next day",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Recreational trails",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "No",
+          "notes": "No program for 2025/26",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Bus stops",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Brock",
+      "region": "Durham",
+      "responsibility": null,
+      "sourceUrl": null,
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "expressway": null,
+        "arterial": null,
+        "collector": null,
+        "local": null,
+        "sidewalks": null,
+        "cycling": null,
+        "windrows": null,
+        "busStops": null
+      }
+    },
+    {
+      "name": "Burlington",
+      "region": "Halton",
+      "responsibility": "City: local roads, all sidewalks/MUPs/stops; Region: Regional roads; registered windrow program",
+      "sourceUrl": "https://www.burlington.ca/en/roads-parking-and-traffic/snow-removal-plan.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Primary roads",
+          "salting": "Brine pre-storm; salted at 1–4 cm",
+          "plowing": "5 cm",
+          "completion": "All roads within 24 hrs after snow stops (Snow Removal Plan)",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Snow Event (parking ban) at 7.5 cm; Regional roads not addressed",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Secondary roads",
+          "salting": "Salted at 1–4 cm",
+          "plowing": "5 cm",
+          "completion": "Within 24 hrs after snow stops (Snow Removal Plan)",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential roads",
+          "salting": "Sanded at intersections, hills, curves",
+          "plowing": "7.5 cm, after primary/secondary",
+          "completion": "Within 24 hrs after snow stops (Snow Removal Plan)",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "No",
+          "notes": "\"not maintained to bare pavement\"",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "All sidewalks (~850 km)",
+          "salting": "Salted/sanded as required",
+          "plowing": "5 cm",
+          "completion": "Aim: within 48 hrs after end of snowfall; page also says plowed after all roads, \"up to 72 hours after snowfall has ended\"",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Same page states 48 hrs (sidewalks) and 72 hrs (high-volume off-road pathways)",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Multi-use pathways",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "Up to 72 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Windrow removal (registered)",
+          "salting": null,
+          "plowing": null,
+          "completion": "After road plowing",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Eligibility not verified",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Transit stops",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "Up to 72 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Caledon",
+      "region": "Peel",
+      "responsibility": "Town: 1,700+ km local roads, sidewalk routes; Peel: Regional arterials; residents: windrows",
+      "sourceUrl": "https://www.caledon.ca/en/town-services/snow-removal.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes (O. Reg. 239/02)",
+          "notes": "Maintained by Region (see Peel)",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Town-owned roads",
+          "salting": "Sanding, de-icing",
+          "plowing": null,
+          "completion": "~24 hrs following winter events",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Town-owned residential roads",
+          "salting": "Sanding, de-icing",
+          "plowing": null,
+          "completion": "~24 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "1,700+ km",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Sidewalk routes",
+          "salting": null,
+          "plowing": null,
+          "completion": "48 hrs after significant event",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Clarington",
+      "region": "Durham",
+      "responsibility": "Municipality: roads, primary-route sidewalks, PXOs; residents: other sidewalks (24 hrs); seniors bundle",
+      "sourceUrl": "https://www.clarington.net/community-and-people/roads-and-transportation/snow-clearing-and-winter-maintenance/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Main roads and emergency routes",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Cleared first; Regional roads by Durham",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary routes",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential streets",
+          "salting": null,
+          "plowing": null,
+          "completion": "After snow stops or primaries under control",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Municipal sidewalk program (primary routes)",
+          "salting": "Plow and salt",
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Since 2023-24; residents clear others within 24 hrs",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Snow Clearing Program for Seniors and Persons with Disabilities",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Bundled sidewalk + windrow, set fee",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Pedestrian crossovers, school crossings",
+          "salting": "Plow and salt",
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "East Gwillimbury",
+      "region": "York",
+      "responsibility": "Town: local roads, all sidewalks; residents: windrows; Region: Regional roads",
+      "sourceUrl": "https://www.eastgwillimbury.ca/en/municipal-services/snow-clearing.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Maintained by York Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary roads",
+          "salting": null,
+          "plowing": "8 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential streets",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "All Town sidewalks",
+          "salting": null,
+          "plowing": "2.5 cm",
+          "completion": "Usually 24 hrs after storm",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "No",
+          "notes": "Financial assistance pilot only",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Georgina",
+      "region": "York",
+      "responsibility": "Town: local roads, 140 km sidewalks/paths, seniors windrows; Region: Regional roads",
+      "sourceUrl": "https://www.georgina.ca/living-here/roads-and-sidewalks/winter-maintenance-and-snow-removal",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Class 1–2 (MMS table)",
+          "salting": null,
+          "plowing": "Dispatch > 5 cm; Cl. 1 2.5 cm / Cl. 2 5 cm",
+          "completion": "Roads \"within six hours following an event\"; Cl. 1 4 hrs / Cl. 2 6 hrs",
+          "surface": null,
+          "mmsClass": "Yes (MMS table)",
+          "notes": "Guide dated 2022",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Class 3 / secondary",
+          "salting": null,
+          "plowing": "8 cm (3–8 cm per map)",
+          "completion": "12 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Class 4–5",
+          "salting": null,
+          "plowing": "8–10 cm",
+          "completion": "16–24 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Sidewalks & paths (~140 km)",
+          "salting": null,
+          "plowing": "3–5 cm",
+          "completion": "24 hrs (48 hrs if 10+ cm)",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Paths",
+          "salting": null,
+          "plowing": "3–5 cm",
+          "completion": "24 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "With sidewalks",
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Windrow Snow Clearing Program (PO-RD-W5)",
+          "salting": null,
+          "plowing": "≥ 7.5 cm",
+          "completion": "24 hrs after roads & sidewalks plowed",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "65+ or disability",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Halton Hills",
+      "region": "Halton",
+      "responsibility": "Town: Town and Regional roads, designated sidewalks; residents: windrows",
+      "sourceUrl": "https://www.haltonhills.ca/en/residents/winter-maintenance.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Priority 1: Main roads (incl. Regional roads)",
+          "salting": "At first sign of snow/ice",
+          "plowing": "\"When accumulations warrant\"",
+          "completion": "All streets 24 hrs after end of storm",
+          "surface": "Bare Pavement",
+          "mmsClass": "Yes (O. Reg. 239/02)",
+          "notes": "Town clears Regional roads in Halton Hills",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Priority 2: Collector roads",
+          "salting": "After main roads",
+          "plowing": null,
+          "completion": "24 hrs",
+          "surface": "Bare Pavement",
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Priority 3: Residential and rural roads",
+          "salting": "Sanded as required",
+          "plowing": null,
+          "completion": "24 hrs",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "Yes",
+          "notes": "Snow-packed locals deemed acceptable",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Designated sidewalks (~160 km)",
+          "salting": null,
+          "plowing": null,
+          "completion": "Town aim: plowing complete within 24–48 hrs after end of storm",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Designated under By-law No. 2007-0003: roads > 1,000 vehicles/day and school frontages",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "Yes",
+          "notes": "Seniors service discussed in TPW-2023-023 only",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Hamilton",
+      "region": "Single-tier cities",
+      "responsibility": "City: all roads incl. Linc/RHVP and 885 km of transit sidewalks; residents: other sidewalks within 24 hrs; MTO: provincial highways",
+      "sourceUrl": "https://www.hamilton.ca/home-neighbourhood/getting-around/streets-sidewalks/snow-clearing",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "expressway": {
+          "terminology": "Parkways (Linc, Red Hill Valley Pkwy)",
+          "salting": "Pre-treated with Priority 1/2 roads (SWE releases)",
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "MTO maintains provincial highways",
+          "secondary": false
+        },
+        "arterial": {
+          "terminology": "Priority 1: Major arterial roads & escarpment accesses",
+          "salting": "Pre-treatment",
+          "plowing": "2.5–5 cm",
+          "completion": "4 hrs; clock starts after winter event ends",
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": "Council LOS: Appendix \"B\" to Report PW18096(a)",
+          "secondary": true
+        },
+        "collector": {
+          "terminology": "Priority 2: Collector roads (2A = transit)",
+          "salting": "Pre-treatment",
+          "plowing": "> 8 cm",
+          "completion": "< 8 hrs",
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": "Full table not retrieved",
+          "secondary": true
+        },
+        "local": {
+          "terminology": "Priority 3: Neighbourhood streets",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Rural loose-top Class 6 = 10 cm, 24-hr response (Appendix B)",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Priority 1 & 2A transit-route sidewalks",
+          "salting": "Activated on forecast",
+          "plowing": null,
+          "completion": "24 hrs after end of event or declared SWE",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "City clears 885 km; residents clear others within 24 hrs (By-law 03-296)",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Bicycle lanes (Report PW10096a)",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Figures not retrieved",
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "No",
+          "notes": "No program found",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Transit stops",
+          "salting": "Activated on forecast",
+          "plowing": null,
+          "completion": "24 hrs after end of event",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Added 2022",
+          "secondary": false
+        }
+      }
+    },
+    {
+      "name": "King",
+      "region": "York",
+      "responsibility": "Township: roads, sidewalks (contracted), seniors windrows; Region: Regional roads",
+      "sourceUrl": "https://www.king.ca/transportation",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "Maintained by York Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Major / Class 3–4 routes",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial (MMS named)",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Class 5 / cul-de-sacs",
+          "salting": "8 cm",
+          "plowing": "8 cm",
+          "completion": "12–16 hrs (conflict)",
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "Cul-de-sacs last",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Township sidewalks (contracted)",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "Resident duty not verified",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Senior Snow Removal Assistance Program",
+          "salting": null,
+          "plowing": "≥ 10 cm",
+          "completion": "24 hrs after road & sidewalk plowing (Mon–Fri)",
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "65+ households",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Markham",
+      "region": "York",
+      "responsibility": "City: ~2,100 km roads, sidewalks, 60+/disability windrows; Region: Regional arterials",
+      "sourceUrl": "https://www.markham.ca/neighbourhood-services/roads-sidewalks/winter-road-services",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Arterial roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial (meets/exceeds Provincial standards)",
+          "notes": "Mostly York Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary / Secondary roads",
+          "salting": "Brine on primary roads/bridges; salt trucks first",
+          "plowing": "5 cm",
+          "completion": "~14 hrs (plowing and sanding)",
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "Mapping of 5 cm/14 hrs to class inferred",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Local / residential roads",
+          "salting": null,
+          "plowing": "7.5 cm, after storm ends",
+          "completion": "~16 hrs",
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Sidewalks (arterial/primary first)",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "City clears",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Snow Windrow Removal Assistance Program",
+          "salting": null,
+          "plowing": "Follows plow",
+          "completion": "Within 4 hrs after road plowed",
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": "60+ and disabled residents",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Partial",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Milton",
+      "region": "Halton",
+      "responsibility": "Town: roads, priority sidewalks; residents: sidewalks (24 hrs) and windrows (seniors program)",
+      "sourceUrl": "https://www.milton.ca/en/living-in-milton/snow-removal.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Priority 1: Major roads and transit routes",
+          "salting": "Salt or sand",
+          "plowing": null,
+          "completion": "All roads 24 hrs after end of snowfall",
+          "surface": "Bare Pavement",
+          "mmsClass": "Yes (O. Reg. 239/02)",
+          "notes": "SWE may extend",
+          "secondary": true
+        },
+        "collector": {
+          "terminology": "Priority 2: Rural collector roads and industrial areas",
+          "salting": "Salt or sand",
+          "plowing": null,
+          "completion": "24 hrs",
+          "surface": "Bare Pavement",
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Priority 3: Urban and rural residential roads",
+          "salting": "As needed",
+          "plowing": null,
+          "completion": "24 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": true
+        },
+        "sidewalks": {
+          "terminology": "Sidewalks for schools, transit, major pedestrian routes",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Residents clear own sidewalks within 24 hrs",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Pathways",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Windrow removal program",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "Yes",
+          "notes": "Program for seniors/persons with disabilities",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Mississauga",
+      "region": "Peel",
+      "responsibility": "City: roads, all sidewalks, trails, stops, bike lanes, windrows; Peel: Regional roads",
+      "sourceUrl": "https://www.mississauga.ca/services-and-programs/transportation-and-streets/roads-and-sidewalks/snow-clearing/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Major and priority roads",
+          "salting": "Starts when snow starts; < 5 cm salted only",
+          "plowing": "5 cm",
+          "completion": "< 5 cm salted 12 hrs; 5–15 cm 12 hrs; 15–30 cm 24 hrs (after snowfall ends)",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "SWE puts timelines on hold; renewed heavy snow restarts process; Regional roads by Peel",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Priority roads (collectors)",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential (secondary) roads",
+          "salting": "< 5 cm salted 24 hrs",
+          "plowing": "5 cm",
+          "completion": "5–15 cm 24 hrs; 15–30 cm 36 hrs; > 30 cm > 36 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Some residential streets are priority",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Priority sidewalks; residential sidewalks",
+          "salting": "Salted < 5 cm",
+          "plowing": "5 cm",
+          "completion": "Priority 12–24 hrs; residential 24–36 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "City clears all sidewalks",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Trails, bike lanes",
+          "salting": "Salted < 5 cm",
+          "plowing": "5 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Old maps say > 8 cm (outdated)",
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Driveway windrow clearing (standard service)",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "After final plowing: 4 hrs (5–15 cm); 6 hrs (15–30 cm)",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Universal; skipped if blocked",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Bus stops, crossings",
+          "salting": "Salted < 5 cm",
+          "plowing": "5 cm",
+          "completion": "12–24 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Newmarket",
+      "region": "York",
+      "responsibility": "Town: local roads, 364 km sidewalks, windrow pilot; Region: Regional roads",
+      "sourceUrl": "https://www.newmarket.ca/roads-transportation/roads-sidewalks/snow-removal",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes (cites \"239\")",
+          "notes": "Maintained by York Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Higher-traffic & emergency routes",
+          "salting": null,
+          "plowing": "> 6 cm",
+          "completion": "Up to 16 hrs (all roads)",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential streets & courts",
+          "salting": null,
+          "plowing": "> 6 cm",
+          "completion": "Up to 16 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Requests accepted 16 hrs after snow stops",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "All Town sidewalks (364 km)",
+          "salting": null,
+          "plowing": null,
+          "completion": "Up to 16 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Residential Windrow Opening Pilot Program",
+          "salting": null,
+          "plowing": "> 6 cm",
+          "completion": "Up to 24 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "First 100 eligible households",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Oakville",
+      "region": "Halton",
+      "responsibility": "Town: local roads, sidewalks, paid windrows; Region: Regional roads",
+      "sourceUrl": "https://www.oakville.ca/transportation-roads/roads-sidewalks/snow-clearing/driveway-windrow-snow-clearing/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "First Priority: Primary roads",
+          "salting": "When snow first accumulates",
+          "plowing": "2.5 cm (Global News)",
+          "completion": "Up to 6 hrs after snow stops (Town, via Oakville News); all streets 24 hrs after snowfall ends (official)",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "SWE suspends standard timelines",
+          "secondary": true
+        },
+        "collector": {
+          "terminology": "Second Priority: Secondary roads incl. bus routes",
+          "salting": "When snow first accumulates",
+          "plowing": "5 cm",
+          "completion": "Up to 12 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": true
+        },
+        "local": {
+          "terminology": "Third Priority: Residential roads",
+          "salting": null,
+          "plowing": "> 7.5 cm",
+          "completion": "24 hrs after snowfall ends",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Primary/secondary and residential sidewalks",
+          "salting": "When \"deemed slippery\"",
+          "plowing": "5 cm main / 8 cm residential",
+          "completion": "~24 hrs main; ~48 hrs residential",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "After roads; school sidewalks first",
+          "secondary": true
+        },
+        "cycling": {
+          "terminology": "Speers Road bike lane",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Listed as active operation",
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Driveway Windrow Snow Clearing (paid)",
+          "salting": null,
+          "plowing": "> 7.5 cm, after all roads",
+          "completion": "Up to 36 hrs after snowfall ends",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Dec 1 2026–Mar 31 2027; once per event; priority registration 65+/disability",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Transit stops",
+          "salting": null,
+          "plowing": "> 5 cm",
+          "completion": "~48 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": true
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Oshawa",
+      "region": "Durham",
+      "responsibility": "City: roads (6/12/16 hrs); Region: Regional roads; owners: sidewalks by midnight next day; assistance program",
+      "sourceUrl": "https://www.oshawa.ca/getting-around/snow-clearing/snow-clearing-activity-report/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Arterial (primary)",
+          "salting": null,
+          "plowing": null,
+          "completion": "6 hrs",
+          "surface": null,
+          "mmsClass": "Yes (O. Reg. 239/02)",
+          "notes": "Region maintains Regional roads",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Collector (primary)",
+          "salting": null,
+          "plowing": null,
+          "completion": "12 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Transit/emergency routes, schools",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential (secondary)",
+          "salting": null,
+          "plowing": null,
+          "completion": "16 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": true
+        },
+        "sidewalks": {
+          "terminology": "City sidewalks per service map",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Owners clear by midnight next day",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Trails & walkways",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Snow Clearing Assistance Program",
+          "salting": null,
+          "plowing": "> 2.5 cm; windrow ≥ 20 cm",
+          "completion": "By midnight the day after snowfall ends",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Registered residents only",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Pickering",
+      "region": "Durham",
+      "responsibility": "City: local roads, select sidewalks incl. Regional-road sidewalks; residents: sidewalks (24 hrs), windrows",
+      "sourceUrl": "https://www.pickering.ca/property-roads-safety/parking-roads-and-driveways/snow-removal-and-clearing/snow-clearing-process/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Maintained by Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Priority Routes: Collector (Main) roads & bus routes",
+          "salting": "NaCl pre-applied if snow within 48 hrs; salt once snow \"sticks\"",
+          "plowing": "~5 cm",
+          "completion": "Urban 13 hrs (≤ 4\") / 24 hrs (≤ 8\"); rural 20 / 30 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "13 urban + 2 rural routes",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Local roads; rural gravel roads",
+          "salting": "Salt (paved) / sand (gravel)",
+          "plowing": "~5 cm",
+          "completion": "Within above windows",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Some Seaton roads by developer",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Main / Secondary / Hand Route sidewalks",
+          "salting": null,
+          "plowing": "After snow stops",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Residents clear within 24 hrs (By-law 6650/06); City clears sidewalks on Regional roads",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "Pathways/Walkways",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "No",
+          "notes": "\"doesn't have the resources\"",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Richmond Hill",
+      "region": "York",
+      "responsibility": "City: local roads, ~750 km sidewalks, universal windrows; Region: Regional roads",
+      "sourceUrl": "https://www.richmondhill.ca/en/living-here/Snow-Removal.aspx",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Maintained by York Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary / Secondary roads",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "16 hrs after snow stops",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "10+ cm may trigger SWE",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Local roads; cul-de-sacs, dead ends",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "16 hrs; cul-de-sacs 24 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Sidewalks (~750 km)",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "14 hrs after end of snowfall",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "City clears all",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "City-wide windrow clearing",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "13 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Universal; excludes sidewalk-plow windrows",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Scugog",
+      "region": "Durham",
+      "responsibility": "Township: roads, select sidewalks; owners: sidewalks (24 hrs), windrows; Region: Regional roads",
+      "sourceUrl": "https://www.scugog.ca/home-property-roads/roads-and-sidewalks/snowplowing-and-winter-operations/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Priority 1: Arterial Roads and EMS Locations",
+          "salting": null,
+          "plowing": "8 cm",
+          "completion": "12 hrs from when snow reaches 8 cm",
+          "surface": null,
+          "mmsClass": "No (MMS-style values)",
+          "notes": "Clock starts at trigger depth",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Priority 2: Class 4, Collector Roads & Bus Routes",
+          "salting": null,
+          "plowing": "8 cm",
+          "completion": "16 hrs from 8 cm",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Priority 3: Class 5 & 6 and Local Roads",
+          "salting": null,
+          "plowing": "10 cm",
+          "completion": "24 hrs from 10 cm",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Full operation 8–12 hrs",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Select Township sidewalks",
+          "salting": null,
+          "plowing": null,
+          "completion": "At least once within 24 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Owners clear within 24 hrs",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Resident Responsibility",
+          "mmsClass": "No",
+          "notes": "No program found",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Toronto",
+      "region": "Single-tier cities",
+      "responsibility": "City: all roads incl. DVP/Gardiner, sidewalks, cycling, bus stops, windrows (eligible streets); MTO: 400-series",
+      "sourceUrl": "https://www.toronto.ca/services-payments/streets-parking-transportation/road-maintenance/winter-maintenance/levels-of-snow-clearing-service/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "expressway": {
+          "terminology": "Expressways (DVP & Gardiner)",
+          "salting": "Brine \"as required\"; salting \"when snow first accumulates\" (< 2.5 cm)",
+          "plowing": "2.5 cm",
+          "completion": "Salting 2 hrs; plowing 2 hrs max operating time per round",
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": "Multiple rounds may be needed; brine max 6 hrs",
+          "secondary": false
+        },
+        "arterial": {
+          "terminology": "Arterials / \"Major roads, transit routes and streets with hills\"",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": "Bare Pavement",
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Collector",
+          "salting": "Brine as required; salting < 8 cm",
+          "plowing": "8 cm",
+          "completion": "Salting 4 hrs; plowing 8 hrs",
+          "surface": "Centre Bare",
+          "mmsClass": "No",
+          "notes": "Centre bare = 2.5 m cleared at centre",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Local Roads / Residential streets; Laneways",
+          "salting": "Salting < 8 cm",
+          "plowing": "8 cm",
+          "completion": "Salting 8 hrs; plowing 14 hrs; laneways 24 hrs from end of snowfall",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "No",
+          "notes": "Laneways are the only explicit end-of-snowfall clock",
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Sidewalks (combined salting & plowing)",
+          "salting": "2 cm",
+          "plowing": "2 cm",
+          "completion": "12 hrs",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "No",
+          "notes": "City mechanically clears all sidewalks",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": "All Cycling Infrastructure",
+          "salting": "2 cm",
+          "plowing": "2 cm",
+          "completion": "8 hrs",
+          "surface": "Safe & Passable / Bare Pavement",
+          "mmsClass": "No",
+          "notes": "2024 revision aligned on-road bike lanes with cycle tracks/MUPs",
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Driveway Windrow Openings",
+          "salting": null,
+          "plowing": "Follows plow; collector/arterial only if windrow > 25 cm",
+          "completion": "\"Same as adjacent roadway plus 2 hours\"",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "No",
+          "notes": "Municipal service on eligible streets; 3 m opening",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": "Bus Stops & Pedestrian Crossovers",
+          "salting": "2 cm",
+          "plowing": "2 cm",
+          "completion": "12 hrs",
+          "surface": "Safe & Passable / Snow Packed",
+          "mmsClass": "No",
+          "notes": "Hand crews \"same as work area\"",
+          "secondary": false
+        }
+      }
+    },
+    {
+      "name": "Uxbridge",
+      "region": "Durham",
+      "responsibility": null,
+      "sourceUrl": null,
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "expressway": null,
+        "arterial": null,
+        "collector": null,
+        "local": null,
+        "sidewalks": null,
+        "cycling": null,
+        "windrows": null,
+        "busStops": null
+      }
+    },
+    {
+      "name": "Vaughan",
+      "region": "York",
+      "responsibility": "City: local roads, all sidewalks, universal windrows; Region: Regional roads",
+      "sourceUrl": "https://www.vaughan.ca/residential/roads-and-traffic/roads/winter-maintenance/snow-removal",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Regional roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Maintained by York Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Main roads",
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential roads",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "12 hrs after snowfall ends",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Main road / residential sidewalks",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "City clears both",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Windrow-clearing service",
+          "salting": null,
+          "plowing": "Follows plow",
+          "completion": "Up to 4 hrs after plow passes",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Universal service",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Whitby",
+      "region": "Durham",
+      "responsibility": "Town: Class 2–6 roads; Region: Class 1; residents: sidewalks (24 hrs); free seniors windrows",
+      "sourceUrl": "https://www.whitby.ca/services-and-payments/parking-roads-and-transportation/snow-clearing/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Class 1 (Regional Roads)",
+          "salting": null,
+          "plowing": "2.5 cm",
+          "completion": "4 hrs",
+          "surface": null,
+          "mmsClass": "Yes (MMS table)",
+          "notes": "Maintained by Region",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Primary (Class 2) / Secondary (Class 3–4)",
+          "salting": "Salted while snowing (primary)",
+          "plowing": "5 cm / 8 cm",
+          "completion": "6 hrs / 12–16 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Clock basis not stated",
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Residential (Class 5–6)",
+          "salting": null,
+          "plowing": "10 cm",
+          "completion": "24 hrs",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "Town sidewalks",
+          "salting": null,
+          "plowing": null,
+          "completion": "After primary & secondary roads",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Residents clear within 24 hrs; Town may bill",
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Snow and windrow clearing (seniors/disability)",
+          "salting": null,
+          "plowing": "10 cm windrow; 5 cm sidewalk",
+          "completion": "Begins ~36 hrs after snow stops",
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": "Free; no able-bodied person under 65",
+          "secondary": false
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "Yes",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    },
+    {
+      "name": "Whitchurch-Stouffville",
+      "region": "York",
+      "responsibility": "Town: local roads, urban sidewalks, free seniors windrows; Region: Regional roads",
+      "sourceUrl": "https://www.townofws.ca/live/roads-parking-and-traffic/winter-roads/snow-plowing/",
+      "lastVerified": "November 12, 2026",
+      "levels": {
+        "arterial": {
+          "terminology": "Arterial roads",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "~8 hrs after end of storm (all classes)",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Regional arterials by York",
+          "secondary": false
+        },
+        "collector": {
+          "terminology": "Collector roads",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "~8 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "local": {
+          "terminology": "Local roads",
+          "salting": null,
+          "plowing": "5 cm",
+          "completion": "~8 hrs",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "sidewalks": {
+          "terminology": "All sidewalks (Stouffville, Ballantrae, Gormley)",
+          "salting": "Sanding",
+          "plowing": "5 cm",
+          "completion": "~24 hrs after end of snowfall",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "cycling": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "windrows": {
+          "terminology": "Seniors & physically challenged windrow clearing",
+          "salting": null,
+          "plowing": null,
+          "completion": "~12 hrs after road plowing",
+          "surface": null,
+          "mmsClass": "No",
+          "notes": "Free",
+          "secondary": true
+        },
+        "busStops": {
+          "terminology": null,
+          "salting": null,
+          "plowing": null,
+          "completion": null,
+          "surface": null,
+          "mmsClass": "No",
+          "notes": null,
+          "secondary": false
+        },
+        "expressway": null
+      }
+    }
+  ]
+}

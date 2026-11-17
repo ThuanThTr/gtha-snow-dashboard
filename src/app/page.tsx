@@ -7,9 +7,19 @@ import type { FeatureCollection, Geometry } from "geojson";
 import Sidebar from "@/components/Sidebar";
 import GthaMap, { type MunFeatureProps } from "@/components/Map";
 import Comparison from "@/components/Comparison";
+import Profiles from "@/components/Profiles";
 import metricsJson from "@/data/municipal-metrics.json";
-import { METRICS, METRIC_BY_KEY, SEQ_RAMP, indexRecords, type MetricKey, type ScaleMode } from "@/lib/metrics";
+import { METRIC_BY_KEY, SEQ_RAMP, indexRecords, type MetricKey, type ScaleMode } from "@/lib/metrics";
 import type { MetricsFile } from "@/lib/types";
+
+/** Indicators offered in the map dropdown, in display order. */
+const DROPDOWN_METRICS: MetricKey[] = ["totalExpenses", "spendPerCapita", "avgSnowMm"];
+
+type View = "map" | "profiles";
+const VIEWS: [View, string][] = [
+  ["map", "Map"],
+  ["profiles", "Profiles"],
+];
 
 const data = metricsJson as MetricsFile;
 const byYear = indexRecords(data.records);
@@ -19,7 +29,8 @@ const MAX_YEAR = data.years.at(-1)!;
 
 export default function Page() {
   const [year, setYear] = useState(2020);
-  const [metric, setMetric] = useState<MetricKey>("tonsPerDollar");
+  const [view, setView] = useState<View>("map");
+  const [metric, setMetric] = useState<MetricKey>("totalExpenses");
   const [scaleMode, setScaleMode] = useState<ScaleMode>("all-years");
   const [selA, setSelA] = useState<string | null>("20002"); // Toronto
   const [selB, setSelB] = useState<string | null>("21005"); // Mississauga
@@ -35,6 +46,8 @@ export default function Page() {
   }, []);
 
   const recordsById = byYear.get(year) ?? new Map();
+  const recordsList = [...recordsById.values()];
+  const withSpendCount = recordsList.filter((r) => r.totalExpenses != null).length;
 
   // Colour scale: quantiles over all years (so colours are comparable year to year)
   // or over the selected year only (to spread out the colours for that year).
@@ -55,24 +68,54 @@ export default function Page() {
     <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* Left: context & controls */}
       <aside className="w-full shrink-0 border-b border-line bg-panel lg:w-[380px] lg:overflow-y-auto lg:border-r lg:border-b-0">
-        <Sidebar
-          year={year}
-          minYear={MIN_YEAR}
-          maxYear={MAX_YEAR}
-          onYearChange={setYear}
-          recordsById={recordsById}
-          assumptions={data.assumptions}
-        />
+        <Sidebar minYear={MIN_YEAR} maxYear={MAX_YEAR} assumptions={data.assumptions} />
       </aside>
 
       {/* Right: visualization */}
       <main className="flex min-w-0 flex-1 flex-col gap-4 p-4 lg:overflow-y-auto lg:p-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm text-ink-2">GTHA municipalities · {year}</p>
-            <h2 className="text-xl font-semibold">{METRIC_BY_KEY[metric].label}</h2>
+          <div className="flex flex-col gap-2">
+            <div role="tablist" aria-label="Main view" className="flex w-fit rounded-md border border-line bg-panel p-0.5 text-sm">
+              {VIEWS.map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={view === key}
+                  onClick={() => setView(key)}
+                  className={`rounded px-3 py-1 ${view === key ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <h2 className="text-xl font-semibold">
+              {view === "map" ? METRIC_BY_KEY[metric].label : "Winter maintenance profiles"}
+            </h2>
           </div>
+          {view === "map" && (
           <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5 text-sm">
+              <label htmlFor="year" className="font-medium">
+                Year
+              </label>
+              <span className="text-xs text-ink-3 tabular-nums">{MIN_YEAR}</span>
+              <input
+                id="year"
+                type="range"
+                min={MIN_YEAR}
+                max={MAX_YEAR}
+                step={1}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                className="year-slider w-36"
+                style={{ "--fill": `${((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100}%` } as React.CSSProperties}
+              />
+              <span className="text-xs text-ink-3 tabular-nums">{MAX_YEAR}</span>
+              <output htmlFor="year" className="w-12 text-right font-semibold tabular-nums">
+                {year}
+              </output>
+            </div>
             <label className="sr-only" htmlFor="metric">
               Map metric
             </label>
@@ -82,9 +125,9 @@ export default function Page() {
               onChange={(e) => setMetric(e.target.value as MetricKey)}
               className="rounded-md border border-line bg-panel px-3 py-1.5 text-sm"
             >
-              {METRICS.map((m) => (
-                <option key={m.key} value={m.key}>
-                  {m.label}
+              {DROPDOWN_METRICS.map((key) => (
+                <option key={key} value={key}>
+                  {METRIC_BY_KEY[key].label}
                 </option>
               ))}
             </select>
@@ -106,8 +149,18 @@ export default function Page() {
               ))}
             </div>
           </div>
+          )}
         </header>
 
+        {view === "map" && withSpendCount < recordsList.length && (
+          <p className="-mt-2 text-xs text-ink-2">
+            {withSpendCount === 0
+              ? `No spending data reported for ${year} yet — only snowfall is shown.`
+              : `${recordsList.length - withSpendCount} of ${recordsList.length} municipalities have no spending data for ${year}.`}
+          </p>
+        )}
+
+        {view === "map" && (
         <section className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-line bg-panel lg:min-h-[480px]">
           {geo ? (
             <GthaMap
@@ -129,7 +182,9 @@ export default function Page() {
             Click a municipality to set comparison <strong>{nextSlot}</strong>
           </p>
         </section>
+        )}
 
+        {view === "map" && (
         <Comparison
           records={data.records}
           years={data.years}
@@ -140,6 +195,13 @@ export default function Page() {
           onChangeA={setSelA}
           onChangeB={setSelB}
         />
+        )}
+
+        {view === "profiles" && (
+          <section className="max-w-5xl">
+            <Profiles />
+          </section>
+        )}
       </main>
     </div>
   );
