@@ -4,7 +4,7 @@ import type { MunicipalRecord } from "./types";
 export const SEQ_RAMP = ["#c8e0f4", "#a9c8e6", "#88aecf", "#587a9d", "#2f4d6a"];
 export const NO_DATA_FILL = "#e3f2fc";
 export const SERIES_A = "#2a78d6";
-export const SERIES_B = "#eb6834";
+export const SERIES_B = "#b5461a"; // Plow rust: 5.4:1 with white badge text
 
 export type ScaleMode = "all-years" | "this-year";
 

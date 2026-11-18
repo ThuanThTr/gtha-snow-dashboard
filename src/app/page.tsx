@@ -7,7 +7,8 @@ import type { FeatureCollection, Geometry } from "geojson";
 import Sidebar from "@/components/Sidebar";
 import GthaMap, { type MunFeatureProps } from "@/components/Map";
 import Comparison from "@/components/Comparison";
-import Profiles from "@/components/Profiles";
+import Link from "next/link";
+import { slugify } from "@/lib/slug";
 import metricsJson from "@/data/municipal-metrics.json";
 import { METRIC_BY_KEY, SEQ_RAMP, indexRecords, type MetricKey, type ScaleMode } from "@/lib/metrics";
 import type { MetricsFile } from "@/lib/types";
@@ -15,28 +16,64 @@ import type { MetricsFile } from "@/lib/types";
 /** Indicators offered in the map dropdown, in display order. */
 const DROPDOWN_METRICS: MetricKey[] = ["totalExpenses", "spendPerCapita", "avgSnowMm"];
 
-type View = "map" | "profiles";
-const VIEWS: [View, string][] = [
-  ["map", "Map"],
-  ["profiles", "Profiles"],
-];
 
 const data = metricsJson as MetricsFile;
 const byYear = indexRecords(data.records);
 const MIN_YEAR = data.years[0]!;
 const MAX_YEAR = data.years.at(-1)!;
 
+const PAIR_KEY = "gtha-compare-pair";
+const KNOWN_IDS = new Set(data.records.map((r) => r.munId));
+const DEFAULT_PAIR: [string, string] = ["20002", "21005"]; // Toronto, Mississauga
+
+/** The last comparison pair this browser saved, or null if none is usable. */
+function readSavedPair(): [string, string] | null {
+  try {
+    const raw = window.localStorage.getItem(PAIR_KEY);
+    if (!raw) return null;
+    const value: unknown = JSON.parse(raw);
+    if (Array.isArray(value) && value.length === 2 && value.every((id) => typeof id === "string" && KNOWN_IDS.has(id))) {
+      return [value[0] as string, value[1] as string];
+    }
+  } catch {
+    // Storage can be blocked or hold bad data; fall back to the default pair.
+  }
+  return null;
+}
+
+function savePair(a: string, b: string) {
+  try {
+    window.localStorage.setItem(PAIR_KEY, JSON.stringify([a, b]));
+  } catch {
+    // Ignore: the comparison still works without saving.
+  }
+}
+
+/** Municipality names grouped by region, for the "open a municipality page" picker. */
+const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map((region) => ({
+  region,
+  names: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))].sort(),
+}));
+
 
 export default function Page() {
   const [year, setYear] = useState(2020);
-  const [view, setView] = useState<View>("map");
   const [metric, setMetric] = useState<MetricKey>("totalExpenses");
   const [scaleMode, setScaleMode] = useState<ScaleMode>("all-years");
-  const [selA, setSelA] = useState<string | null>("20002"); // Toronto
-  const [selB, setSelB] = useState<string | null>("21005"); // Mississauga
+  const [selA, setSelA] = useState<string | null>(DEFAULT_PAIR[0]);
+  const [selB, setSelB] = useState<string | null>(DEFAULT_PAIR[1]);
   const [nextSlot, setNextSlot] = useState<"A" | "B">("A");
   const [geo, setGeo] = useState<FeatureCollection<Geometry, MunFeatureProps> | null>(null);
   const [geoError, setGeoError] = useState(false);
+
+  // Restore the last saved pair after mount, so the server render matches the default.
+  useEffect(() => {
+    const saved = readSavedPair();
+    if (saved) {
+      setSelA(saved[0]);
+      setSelB(saved[1]);
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/data/gtha-boundaries.geojson")
@@ -57,10 +94,17 @@ export default function Page() {
     return d3.scaleQuantile<string>().domain(values).range(SEQ_RAMP);
   }, [metric, scaleMode, recordsById]);
 
+  /** Sets both comparison slots and saves the pair once both are filled. */
+  function updatePair(a: string | null, b: string | null) {
+    setSelA(a);
+    setSelB(b);
+    if (a && b) savePair(a, b);
+  }
+
   function handleMapSelect(id: string) {
     if (id === selA || id === selB) return;
-    if (nextSlot === "A") setSelA(id);
-    else setSelB(id);
+    if (nextSlot === "A") updatePair(id, selB);
+    else updatePair(selA, id);
     setNextSlot(nextSlot === "A" ? "B" : "A");
   }
 
@@ -68,32 +112,15 @@ export default function Page() {
     <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* Left: context & controls */}
       <aside className="w-full shrink-0 border-b border-line bg-panel lg:w-[380px] lg:overflow-y-auto lg:border-r lg:border-b-0">
-        <Sidebar minYear={MIN_YEAR} maxYear={MAX_YEAR} assumptions={data.assumptions} />
+        <Sidebar />
       </aside>
 
       {/* Right: visualization */}
       <main className="flex min-w-0 flex-1 flex-col gap-4 p-4 lg:overflow-y-auto lg:p-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-2">
-            <div role="tablist" aria-label="Main view" className="flex w-fit rounded-md border border-line bg-panel p-0.5 text-sm">
-              {VIEWS.map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={view === key}
-                  onClick={() => setView(key)}
-                  className={`rounded px-3 py-1 ${view === key ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <h2 className="text-xl font-semibold">
-              {view === "map" ? METRIC_BY_KEY[metric].label : "Winter maintenance profiles"}
-            </h2>
+          <div>
+            <h2 className="text-xl font-semibold">{METRIC_BY_KEY[metric].label}</h2>
           </div>
-          {view === "map" && (
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5 text-sm">
               <label htmlFor="year" className="font-medium">
@@ -149,10 +176,9 @@ export default function Page() {
               ))}
             </div>
           </div>
-          )}
         </header>
 
-        {view === "map" && withSpendCount < recordsList.length && (
+        {withSpendCount < recordsList.length && (
           <p className="-mt-2 text-xs text-ink-2">
             {withSpendCount === 0
               ? `No spending data reported for ${year} yet — only snowfall is shown.`
@@ -160,7 +186,31 @@ export default function Page() {
           </p>
         )}
 
-        {view === "map" && (
+        <>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <label htmlFor="open-municipality" className="font-medium">
+            Municipality page
+          </label>
+          <select
+            id="open-municipality"
+            defaultValue=""
+            onChange={(e) => {
+              if (e.target.value) window.location.href = `/municipality/${e.target.value}`;
+            }}
+            className="rounded-md border border-line bg-panel px-2 py-1 text-sm"
+          >
+            <option value="">Open a municipality page…</option>
+            {MUNICIPALITY_GROUPS.map(({ region, names }) => (
+              <optgroup key={region} label={region}>
+                {names.map((name) => (
+                  <option key={name} value={slugify(name)}>
+                    {name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
         <section className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-line bg-panel lg:min-h-[480px]">
           {geo ? (
             <GthaMap
@@ -182,9 +232,27 @@ export default function Page() {
             Click a municipality to set comparison <strong>{nextSlot}</strong>
           </p>
         </section>
-        )}
+        <p className="-mt-2 text-xs text-ink-2">
+          Figure: {METRIC_BY_KEY[metric].label}, {year}, for the 26 GTHA municipalities. Colour bands are quantiles, so
+          each band holds roughly the same number of municipalities.
+        </p>
+        <div className="-mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          {[selA, selB].map((id, i) => {
+            const rec = data.records.find((r) => r.munId === id);
+            if (!rec) return null;
+            return (
+              <Link
+                key={`${i}-${rec.munId}`}
+                href={`/municipality/${slugify(rec.name)}`}
+                className="text-ink underline underline-offset-2"
+              >
+                Open {rec.name} page →
+              </Link>
+            );
+          })}
+        </div>
+        </>
 
-        {view === "map" && (
         <Comparison
           records={data.records}
           years={data.years}
@@ -192,16 +260,9 @@ export default function Page() {
           metric={metric}
           selA={selA}
           selB={selB}
-          onChangeA={setSelA}
-          onChangeB={setSelB}
+          onChangeA={(id) => updatePair(id, selB)}
+          onChangeB={(id) => updatePair(selA, id)}
         />
-        )}
-
-        {view === "profiles" && (
-          <section className="max-w-5xl">
-            <Profiles />
-          </section>
-        )}
       </main>
     </div>
   );
