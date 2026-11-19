@@ -1,0 +1,49 @@
+import type { MunicipalRecord } from "@/lib/types";
+import { areaLabel, areaSummaries } from "@/lib/insights";
+
+/** Spending per resident for the six areas in one year, as simple horizontal bars. */
+export default function AreaComparison({ records, year }: { records: MunicipalRecord[]; year: number }) {
+  const areas = areaSummaries(records.filter((r) => r.year === year));
+  const max = Math.max(...areas.map((a) => a.perResident ?? 0), 1);
+
+  return (
+    <section aria-labelledby="area-title" className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-4">
+      <div>
+        <h2 id="area-title" className="text-base font-semibold">
+          Spending per resident by area · {year}
+        </h2>
+        <p className="text-xs text-ink-2">How does my area compare?</p>
+      </div>
+      <ul className="flex flex-col gap-2">
+        {areas.map((a) => (
+          <li key={a.area} className="grid grid-cols-[7.5rem_1fr_3.5rem] items-center gap-3 text-sm">
+            <span className="text-ink">{areaLabel(a.area)}</span>
+            {a.perResident != null ? (
+              <>
+                <span className="h-4 bg-line">
+                  <span className="block h-full bg-ink" style={{ width: `${(a.perResident / max) * 100}%` }} />
+                </span>
+                <span className="text-right tabular-nums text-ink">${Math.round(a.perResident)}</span>
+              </>
+            ) : (
+              <span className="col-span-2 text-xs italic text-ink-3">Not reported for {year}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+      {areas.some((a) => a.perResident != null && a.reportedCount < a.totalCount) && (
+        <p className="text-xs text-ink-2">
+          Not every municipality reported for {year}:{" "}
+          {areas
+            .filter((a) => a.perResident != null && a.reportedCount < a.totalCount)
+            .map((a) => `${areaLabel(a.area)} (${a.reportedCount} of ${a.totalCount})`)
+            .join(", ")}
+          .
+        </p>
+      )}
+      <p className="text-xs text-ink-2">
+        Toronto and Hamilton are single-tier cities, so each gets its own row.
+      </p>
+    </section>
+  );
+}

@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { MunicipalRecord } from "@/lib/types";
-import { METRICS, METRIC_BY_KEY, SERIES_A, SERIES_B, formatMetric, type MetricKey } from "@/lib/metrics";
+import { METRIC_BY_KEY, SERIES_A, SERIES_B, formatMetric, type MetricKey } from "@/lib/metrics";
+
+/** Rows of the side-by-side table, in display order. */
+const TABLE_KEYS: MetricKey[] = ["totalExpenses", "localCost", "regionalCost", "spendPerCapita", "avgSnowCm"];
 
 interface ComparisonProps {
   records: MunicipalRecord[];
@@ -54,15 +57,16 @@ export default function Comparison({ records, years, year, metric, selA, selB, o
               </tr>
             </thead>
             <tbody>
-              {METRICS.map((m) => {
-                const a = recA?.[m.key] ?? null;
-                const b = recB?.[m.key] ?? null;
+              {TABLE_KEYS.map((key) => {
+                const m = METRIC_BY_KEY[key];
+                const a = recA?.[key] ?? null;
+                const b = recB?.[key] ?? null;
                 const diff = a != null && b != null && b !== 0 ? (a - b) / b : null;
                 return (
-                  <tr key={m.key} className={`border-b border-line last:border-0 ${m.key === metric ? "bg-surface" : ""}`}>
+                  <tr key={key} className={`border-b border-line last:border-0 ${key === metric ? "bg-surface" : ""}`}>
                     <td className="py-2 pr-3 text-ink-2">{m.label}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{formatMetric(m.key, a)}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{formatMetric(m.key, b)}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{formatMetric(key, a)}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums">{formatMetric(key, b)}</td>
                     <td className="py-2 text-right text-ink-2 tabular-nums">
                       {diff == null ? "—" : `${diff > 0 ? "+" : ""}${d3.format(".0%")(diff)}`}
                     </td>
@@ -172,9 +176,10 @@ function TrendChart({
 
     const x = d3.scaleLinear().domain(d3.extent(years) as [number, number]).range([M.left, M.left + innerW]);
     const allValues = series.flatMap((s) => s.points.map((p) => p.value)).filter((v): v is number => v != null);
+    // Start at zero, but extend below it when a measure (change since 2016) has negative values.
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(allValues) ?? 1])
+      .domain([Math.min(0, d3.min(allValues) ?? 0), Math.max(d3.max(allValues) ?? 1, 0)])
       .nice()
       .range([H - M.bottom, M.top]);
 
@@ -195,7 +200,7 @@ function TrendChart({
       .join("g")
       .attr("class", "y")
       .attr("transform", `translate(${M.left},0)`)
-      .call(d3.axisLeft(y).ticks(4).tickSize(-innerW).tickFormat((v) => def.format(v as number)))
+      .call(d3.axisLeft(y).ticks(4).tickSize(-innerW).tickFormat((v) => def.formatShort(v as number)))
       .call((g) => g.select(".domain").remove())
       .call((g) => g.selectAll("line").attr("stroke", "#ecebe7"))
       .call((g) => g.selectAll("text").attr("fill", "#52514e"));

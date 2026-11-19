@@ -1,9 +1,13 @@
 /**
  * Build-time data pipeline.
  *
- * Reads the raw CSVs + GeoJSON, then writes:
+ * Reads the raw CSV + GeoJSON, then writes:
  *   src/data/municipal-metrics.json   – one record per municipality per year (long format)
  *   public/data/gtha-boundaries.geojson – GTHA polygons only, trimmed for the web
+ *
+ * Spending and snowfall come from data/winter-costs.csv (exported from data/winter_costs.xlsx,
+ * "Clean Data" sheet, plus the 2025 rows in data/fir-2025-update.csv). Names and regions come
+ * from data/municipality-directory.csv.
  *
  * Run with: npm run data   (also runs automatically before `npm run build`)
  */
@@ -16,8 +20,7 @@ import type { MunicipalRecord, MetricsFile } from "../src/lib/types";
 
 const ROOT = process.cwd();
 const RAW = {
-  snow: path.join(ROOT, "data/avg-snow-by-municipality.csv"),
-  fir: path.join(ROOT, "data/fir-data.csv"),
+  costs: path.join(ROOT, "data/winter-costs.csv"),
   directory: path.join(ROOT, "data/municipality-directory.csv"),
   geo: path.join(ROOT, "geospatial data/Municipal_Boun_FeaturesToJSO.geojson"),
 };
@@ -26,11 +29,8 @@ const OUT = {
   geo: path.join(ROOT, "public/data/gtha-boundaries.geojson"),
 };
 
-// Model assumptions (kept in one place so the Methods panel can show them).
-export const ASSUMPTIONS = {
-  roadWidthM: 8, // average municipal road width
-  snowDensityTPerM3: 0.1, // 100 kg/m³ fresh snow
-} as const;
+/** Spending per resident is compared against this year for the "change since" measure. */
+const BASE_YEAR = 2016;
 
 // ---------- helpers ----------
 
@@ -55,41 +55,13 @@ function safeDiv(a: number | null, b: number | null): number | null {
   return a / b;
 }
 
-// ---------- 1. Unpivot snow data (wide → long) ----------
-
-const SNOW_COL = /^(?:total-)?avg-snow-(\d{4})$/;
-
-interface SnowRow {
-  munId: string;
-  year: number;
-  avgSnowMm: number | null;
-}
-
-const snowLong: SnowRow[] = [];
-for (const row of readCsv(RAW.snow)) {
-  const munId = row["mun-id"]!.trim();
-  for (const [col, value] of Object.entries(row)) {
-    const match = SNOW_COL.exec(col);
-    if (match) snowLong.push({ munId, year: Number(match[1]), avgSnowMm: num(value) });
-  }
-}
-
-// ---------- 2. Index FIR expenses and directory by mun-id ----------
-
-const expenses = new Map<string, number | null>(); // key: `${munId}|${year}`
-for (const row of readCsv(RAW.fir)) {
-  expenses.set(`${row["mun-id"]!.trim()}|${Number(row.year)}`, num(row["total-expenses"]));
-}
+// ---------- 1. Municipal directory (names and regions) ----------
 
 interface DirectoryRow {
   munId: string;
   name: string;
   fullName: string;
   region: string;
-  type: string;
-  pop2016: number | null;
-  pop2021: number | null;
-  roadKm: number | null;
 }
 const directory = new Map<string, DirectoryRow>();
 for (const row of readCsv(RAW.directory)) {
@@ -99,70 +71,74 @@ for (const row of readCsv(RAW.directory)) {
     name: row.municipality!.trim(),
     fullName: row["full-name"]!.trim(),
     region: row.region!.trim(),
-    type: row["municipal-type"]!.trim(),
-    pop2016: num(row["total-pop-2016"]),
-    pop2021: num(row["total-pop-2021"]),
-    roadKm: num(row["total-km-road-length-2019"]),
   });
 }
 
-// ---------- 3–4. Merge, pick population, compute indicators ----------
+// ---------- 2. Winter costs: one row per municipality per year ----------
 
 const records: MunicipalRecord[] = [];
 const warnings: string[] = [];
 
-for (const s of snowLong) {
-  const dir = directory.get(s.munId);
+for (const row of readCsv(RAW.costs)) {
+  const munId = row["mun-id"]!.trim();
+  const dir = directory.get(munId);
   if (!dir) {
-    warnings.push(`Snow row for mun-id ${s.munId} has no directory entry – skipped`);
+    warnings.push(`Cost row for mun-id ${munId} has no directory entry – skipped`);
     continue;
   }
-  const totalExpenses = expenses.get(`${s.munId}|${s.year}`) ?? null;
-  const activePopulation = s.year <= 2016 ? dir.pop2016 : dir.pop2021;
-  const roadKm = dir.roadKm;
-
-  const roadAreaM2 = roadKm == null ? null : roadKm * 1000 * ASSUMPTIONS.roadWidthM;
-  const snowVolumeM3 =
-    s.avgSnowMm == null || roadAreaM2 == null ? null : (s.avgSnowMm / 1000) * roadAreaM2;
-  const snowTons = snowVolumeM3 == null ? null : snowVolumeM3 * ASSUMPTIONS.snowDensityTPerM3;
+  const year = Number(row.year);
+  const population = num(row["population-2021"]);
+  // A blank total means the municipality did not report that year: keep it null, never 0.
+  const totalExpenses = num(row["total-winter-cost"]);
+  const reported = totalExpenses != null;
+  const localCost = reported ? num(row["local-winter-cost"]) : null;
+  const regionalCost = reported ? (num(row["allocated-region-cost"]) ?? 0) : null;
 
   records.push({
-    munId: s.munId,
+    munId,
     name: dir.name,
     fullName: dir.fullName,
     region: dir.region,
-    year: s.year,
-    avgSnowMm: s.avgSnowMm,
+    area: row.region!.trim(),
+    year,
+    avgSnowCm: num(row["avg-snow-cm"]),
     totalExpenses,
-    activePopulation,
-    roadKm,
-    roadAreaM2,
-    snowVolumeM3,
-    snowTons,
-    kmPer1000Residents: safeDiv(roadKm, activePopulation == null ? null : activePopulation / 1000),
-    spendPerKm: safeDiv(totalExpenses, roadKm),
-    spendPerCapita: safeDiv(totalExpenses, activePopulation),
-    tonsPerDollar: safeDiv(snowTons, totalExpenses),
+    localCost,
+    roadsCost: reported ? num(row["roads-0621"]) : null,
+    sidewalksCost: reported ? num(row["sidewalks-0622"]) : null,
+    regionalCost,
+    regionalShare: safeDiv(regionalCost, totalExpenses),
+    population,
+    spendPerCapita: safeDiv(totalExpenses, population),
+    changeSince2016: null, // filled in below, once every year is loaded
   });
+}
+
+// ---------- 3. Change in spending per resident since the base year ----------
+
+const baseById = new Map(
+  records.filter((r) => r.year === BASE_YEAR).map((r) => [r.munId, r.spendPerCapita] as const),
+);
+for (const r of records) {
+  const base = baseById.get(r.munId) ?? null;
+  if (r.year > BASE_YEAR && base != null && r.spendPerCapita != null) r.changeSince2016 = r.spendPerCapita / base - 1;
 }
 
 records.sort((a, b) => a.name.localeCompare(b.name) || a.year - b.year);
 const years = [...new Set(records.map((r) => r.year))].sort((a, b) => a - b);
 
-const missingExpenses = records.filter((r) => r.totalExpenses == null);
-for (const r of missingExpenses) warnings.push(`No expenses for ${r.name} ${r.year}`);
+for (const r of records.filter((r) => r.totalExpenses == null)) warnings.push(`Not reported: ${r.name} ${r.year}`);
 
 const metricsFile: MetricsFile = {
   generatedAt: new Date().toISOString(),
   years,
-  assumptions: ASSUMPTIONS,
   records,
 };
 
 mkdirSync(path.dirname(OUT.metrics), { recursive: true });
 writeFileSync(OUT.metrics, JSON.stringify(metricsFile));
 
-// ---------- 5. GeoJSON: keep GTHA features, fix winding, trim precision ----------
+// ---------- 4. GeoJSON: keep GTHA features, fix winding, trim precision ----------
 
 const geo = JSON.parse(readFileSync(RAW.geo, "utf8")) as FeatureCollection<Geometry>;
 const PRECISION = 1e4; // 4 decimals ≈ 11 m – plenty for a regional map
@@ -222,7 +198,8 @@ writeFileSync(OUT.geo, JSON.stringify({ type: "FeatureCollection", features: gth
 
 // ---------- report ----------
 
-console.log(`✔ ${records.length} records (${directory.size} municipalities × ${years.length} years: ${years[0]}–${years.at(-1)})`);
+const munCount = new Set(records.map((r) => r.munId)).size;
+console.log(`✔ ${records.length} records (${munCount} municipalities × ${years.length} years: ${years[0]}–${years.at(-1)})`);
 console.log(`✔ ${gthaFeatures.length} boundary features written`);
 if (warnings.length) {
   console.log(`⚠ ${warnings.length} notes:`);

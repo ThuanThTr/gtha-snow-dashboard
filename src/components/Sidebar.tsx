@@ -61,8 +61,8 @@ export default function Sidebar() {
         </section>
 
         <p>
-          <a href="/methodology" className="font-medium text-ink underline underline-offset-2">
-            Read the full methodology, with a worked example →
+          <a href="/project" className="font-medium text-ink underline underline-offset-2">
+            Read the project description: key findings, methods and data sources →
           </a>
         </p>
       </div>

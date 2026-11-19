@@ -7,16 +7,7 @@ import { Map as MapLibreMap, type MapMouseEvent, setWorkerUrl } from "maplibre-g
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { MunicipalRecord } from "@/lib/types";
-import {
-  METRICS,
-  METRIC_BY_KEY,
-  NO_DATA_FILL,
-  SERIES_A,
-  SERIES_B,
-  formatInt,
-  formatMetric,
-  type MetricKey,
-} from "@/lib/metrics";
+import { METRIC_BY_KEY, NO_DATA_FILL, SERIES_A, SERIES_B, formatMetric, ordinal, type MetricKey } from "@/lib/metrics";
 
 export interface MunFeatureProps {
   munId: string;
@@ -25,13 +16,21 @@ export interface MunFeatureProps {
 }
 type MunFeature = Feature<Geometry, MunFeatureProps>;
 
+export interface LegendItem {
+  color: string;
+  label: string;
+}
+
 interface MapProps {
   geo: FeatureCollection<Geometry, MunFeatureProps>;
   year: number;
   metric: MetricKey;
   /** munId → record for the active year */
   recordsById: Map<string, MunicipalRecord>;
-  colorScale: d3.ScaleQuantile<string>;
+  /** munId → every year's record, for the hover trend line */
+  seriesById: Map<string, MunicipalRecord[]>;
+  colorScale: (value: number) => string;
+  legend: LegendItem[];
   selectedA: string | null;
   selectedB: string | null;
   onSelect: (munId: string) => void;
@@ -45,6 +44,7 @@ interface Hover {
 
 const PAD = 16;
 const TOOLTIP_W = 300;
+const TOOLTIP_H = 330;
 const LEGEND_H = 64;
 
 // Carto Positron (no labels) vector style. Key comes from NEXT_PUBLIC_CARTO_API_KEY in .env.local.
@@ -59,7 +59,9 @@ export default function GthaMap({
   year,
   metric,
   recordsById,
+  seriesById,
   colorScale,
+  legend,
   selectedA,
   selectedB,
   onSelect,
@@ -174,7 +176,7 @@ export default function GthaMap({
     if (!svg || !path) return;
     const root = d3.select(svg);
 
-    // Hatch pattern for "no data"
+    // Hatch pattern for "not reported"
     let defs = root.select<SVGDefsElement>("defs");
     if (defs.empty()) {
       defs = root.append("defs");
@@ -317,11 +319,19 @@ export default function GthaMap({
     g.select("text").text((o) => o.label);
   }, [geo, path, hover, selectedA, selectedB]);
 
+  // ---- rank of each municipality by spending per resident in the active year ----
+  const ranking = useMemo(() => {
+    const ordered = [...recordsById.values()]
+      .filter((r) => r.spendPerCapita != null)
+      .sort((a, b) => b.spendPerCapita! - a.spendPerCapita!);
+    return { rankById: new Map(ordered.map((r, i) => [r.munId, i + 1])), count: ordered.length };
+  }, [recordsById]);
+
   // ---- tooltip ----
   const hovered = hover ? recordsById.get(hover.munId) : undefined;
   const hoveredName = hover ? geo.features.find((f) => f.properties.munId === hover.munId)?.properties.name : "";
   const tipLeft = hover ? (hover.x + 16 + TOOLTIP_W > size.w ? hover.x - 16 - TOOLTIP_W : hover.x + 16) : 0;
-  const tipTop = hover ? Math.max(8, Math.min(hover.y - 20, size.h - 300)) : 0;
+  const tipTop = hover ? Math.max(8, Math.min(hover.y - 20, size.h - TOOLTIP_H)) : 0;
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
@@ -335,10 +345,10 @@ export default function GthaMap({
         width={size.w}
         height={size.h}
         role="img"
-        aria-label={`Choropleth map of ${METRIC_BY_KEY[metric].label}, ${year}`}
+        aria-label={`Map of ${METRIC_BY_KEY[metric].label}, ${year}`}
       />
 
-      <Legend colorScale={colorScale} metric={metric} />
+      <Legend title={METRIC_BY_KEY[metric].label} items={legend} />
 
       <div className="absolute right-3 top-3 z-20 flex flex-col overflow-hidden rounded-md border border-line bg-panel shadow">
         <button
@@ -377,59 +387,130 @@ export default function GthaMap({
             <p className="font-semibold">{hoveredName}</p>
             <p className="text-xs text-ink-2">{year}</p>
           </div>
-          {hovered ? (
-            <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1">
-              {METRICS.map((m) => (
-                <div key={m.key} className="contents">
-                  <dt className={m.key === metric ? "font-medium text-ink" : "text-ink-2"}>{m.label}</dt>
-                  <dd className={`text-right tabular-nums ${m.key === metric ? "font-semibold" : ""}`}>
-                    {formatMetric(m.key, hovered[m.key])}
-                  </dd>
-                </div>
-              ))}
-              <dt className="text-ink-2">Population used</dt>
-              <dd className="text-right tabular-nums">{formatInt(hovered.activePopulation)}</dd>
-              <dt className="text-ink-2">Est. snow on roads</dt>
-              <dd className="text-right tabular-nums">{formatInt(hovered.snowTons)} t</dd>
-            </dl>
+          {hovered && hovered.totalExpenses != null ? (
+            <div className="flex flex-col gap-2">
+              <div>
+                <p className="text-2xl font-semibold tabular-nums leading-tight text-ink">
+                  {formatMetric("spendPerCapita", hovered.spendPerCapita)}
+                  <span className="ml-1 text-sm font-normal text-ink-2">per resident</span>
+                </p>
+                {ranking.rankById.has(hovered.munId) && (
+                  <p className="text-xs text-ink-2">
+                    {ordinal(ranking.rankById.get(hovered.munId)!)} highest of the {ranking.count} municipalities
+                    reporting in {year}
+                  </p>
+                )}
+              </div>
+              <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 text-xs">
+                <dt className="text-ink-2">Total winter spending</dt>
+                <dd className="text-right tabular-nums text-ink">{formatMetric("totalExpenses", hovered.totalExpenses)}</dd>
+                {metric === "changeSince2016" && (
+                  <>
+                    <dt className="text-ink-2">Change since 2016</dt>
+                    <dd className="text-right tabular-nums text-ink">
+                      {formatMetric("changeSince2016", hovered.changeSince2016)}
+                    </dd>
+                  </>
+                )}
+                <dt className="text-ink-2">Average snowfall (estimated)</dt>
+                <dd className="text-right tabular-nums text-ink">{formatMetric("avgSnowCm", hovered.avgSnowCm)}</dd>
+              </dl>
+              <ShareBar record={hovered} />
+            </div>
           ) : (
-            <p className="text-ink-2">No data for this year.</p>
+            <p className="text-ink-2">
+              Not reported for {year}. A missing year does not mean nothing was spent.
+            </p>
           )}
+          <Sparkline series={seriesById.get(hover.munId) ?? []} year={year} />
         </div>
       )}
     </div>
   );
 }
 
-function Legend({ colorScale, metric }: { colorScale: d3.ScaleQuantile<string>; metric: MetricKey }) {
-  const def = METRIC_BY_KEY[metric];
-  const hasData = colorScale.domain().length > 0;
-  const range = colorScale.range();
-  const breaks = hasData ? [d3.min(colorScale.domain())!, ...colorScale.quantiles(), d3.max(colorScale.domain())!] : [];
+/** Own roads and sidewalks versus the population share of regional road costs. */
+function ShareBar({ record }: { record: MunicipalRecord }) {
+  if (record.regionalShare == null) return null;
+  if (record.regionalCost === 0) {
+    return <p className="text-xs text-ink-2">The city runs all of its own roads, so there is no regional roads share.</p>;
+  }
+  const share = record.regionalShare;
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  return (
+    <div className="flex flex-col gap-1 text-xs">
+      <div className="flex h-2.5 overflow-hidden rounded-sm" aria-hidden="true">
+        <span style={{ width: `${(1 - share) * 100}%`, background: "#2f4d6a" }} />
+        <span style={{ width: `${share * 100}%`, background: "#88aecf" }} />
+      </div>
+      <div className="flex justify-between gap-2 text-ink-2">
+        <span className="flex items-center gap-1">
+          <span className="h-2 w-2 rounded-sm" style={{ background: "#2f4d6a" }} />
+          Own roads and sidewalks {pct(1 - share)}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="h-2 w-2 rounded-sm" style={{ background: "#88aecf" }} />
+          Regional roads share {pct(share)}
+        </span>
+      </div>
+    </div>
+  );
+}
 
+/** Spending per resident across all years, with the active year marked. Gaps are years not reported. */
+function Sparkline({ series, year }: { series: MunicipalRecord[]; year: number }) {
+  const values = series.map((r) => r.spendPerCapita).filter((v): v is number => v != null);
+  if (values.length < 2) return null;
+  const W = 276;
+  const H = 44;
+  const P = 4;
+  const years = series.map((r) => r.year);
+  const x = d3.scaleLinear().domain(d3.extent(years) as [number, number]).range([P, W - P]);
+  const y = d3.scaleLinear().domain([0, d3.max(values)!]).range([H - P, P]);
+  const line = d3
+    .line<MunicipalRecord>()
+    .defined((r) => r.spendPerCapita != null)
+    .x((r) => x(r.year))
+    .y((r) => y(r.spendPerCapita!));
+  const current = series.find((r) => r.year === year)?.spendPerCapita;
+  return (
+    <figure className="mt-1 border-t border-line pt-2">
+      <svg viewBox={`0 0 ${W} ${H}`} className="block h-11 w-full" aria-hidden="true">
+        <path d={line(series) ?? ""} fill="none" stroke="#2f4d6a" strokeWidth={1.5} strokeLinejoin="round" />
+        {current != null && (
+          <circle cx={x(year)} cy={y(current)} r={3.5} fill="#b5461a" stroke="#ffffff" strokeWidth={1.5} />
+        )}
+      </svg>
+      <figcaption className="flex justify-between text-[11px] text-ink-3">
+        <span>{years[0]}</span>
+        <span>Spending per resident</span>
+        <span>{years.at(-1)}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function Legend({ title, items }: { title: string; items: LegendItem[] }) {
   return (
     <div className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-md bg-panel/95 p-2 text-xs">
-      <p className="mb-1 font-medium">{def.label}</p>
-      {hasData ? (
+      <p className="mb-1 font-medium">{title}</p>
+      {items.length > 0 ? (
         <div className="flex flex-wrap items-end gap-x-0.5 gap-y-2">
-          {range.map((color, i) => (
-            <div key={color} className="flex w-[72px] flex-col gap-1">
+          {items.map(({ color, label }) => (
+            <div key={`${color}-${label}`} className="flex w-[72px] flex-col gap-1">
               <span className="h-3 rounded-sm" style={{ background: color }} />
-              <span className="tabular-nums text-ink-2">
-                {i === 0 ? "" : "≥ "}
-                {def.format(breaks[i]!)}
-              </span>
+              <span className="tabular-nums text-ink-2">{label}</span>
             </div>
           ))}
-          <div className="ml-2 flex w-[56px] flex-col gap-1">
+          <div className="ml-2 flex w-[72px] flex-col gap-1">
             <svg className="h-3 w-full rounded-sm" aria-hidden>
               <rect width="100%" height="100%" fill="url(#nodata-hatch)" />
             </svg>
-            <span className="text-ink-2">No data</span>
+            <span className="text-ink-2">Not reported</span>
           </div>
         </div>
       ) : (
-        <p className="text-ink-2">No data for this metric in this year.</p>
+        <p className="text-ink-2">No data for this measure in this year.</p>
       )}
     </div>
   );

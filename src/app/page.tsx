@@ -5,20 +5,34 @@ import * as d3 from "d3";
 import type { FeatureCollection, Geometry } from "geojson";
 
 import Sidebar from "@/components/Sidebar";
-import GthaMap, { type MunFeatureProps } from "@/components/Map";
+import GthaMap, { type LegendItem, type MunFeatureProps } from "@/components/Map";
 import Comparison from "@/components/Comparison";
+import AreaComparison from "@/components/AreaComparison";
+import SnowScatter from "@/components/SnowScatter";
 import Link from "next/link";
 import { slugify } from "@/lib/slug";
 import metricsJson from "@/data/municipal-metrics.json";
-import { METRIC_BY_KEY, SEQ_RAMP, indexRecords, type MetricKey, type ScaleMode } from "@/lib/metrics";
+import {
+  CHANGE_LABELS,
+  CHANGE_RAMP,
+  CHANGE_THRESHOLDS,
+  METRIC_BY_KEY,
+  NO_DATA_FILL,
+  SEQ_RAMP,
+  indexRecords,
+  seriesByMunicipality,
+  type MetricKey,
+  type ScaleMode,
+} from "@/lib/metrics";
+import { HEADLINE_YEAR } from "@/lib/insights";
 import type { MetricsFile } from "@/lib/types";
 
-/** Indicators offered in the map dropdown, in display order. */
-const DROPDOWN_METRICS: MetricKey[] = ["totalExpenses", "spendPerCapita", "avgSnowMm"];
-
+/** Measures offered in the map dropdown, in display order. */
+const DROPDOWN_METRICS: MetricKey[] = ["spendPerCapita", "totalExpenses", "changeSince2016", "avgSnowCm"];
 
 const data = metricsJson as MetricsFile;
 const byYear = indexRecords(data.records);
+const seriesById = seriesByMunicipality(data.records);
 const MIN_YEAR = data.years[0]!;
 const MAX_YEAR = data.years.at(-1)!;
 
@@ -57,8 +71,8 @@ const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map(
 
 
 export default function Page() {
-  const [year, setYear] = useState(2020);
-  const [metric, setMetric] = useState<MetricKey>("totalExpenses");
+  const [year, setYear] = useState(HEADLINE_YEAR);
+  const [metric, setMetric] = useState<MetricKey>("spendPerCapita");
   const [scaleMode, setScaleMode] = useState<ScaleMode>("all-years");
   const [selA, setSelA] = useState<string | null>(DEFAULT_PAIR[0]);
   const [selB, setSelB] = useState<string | null>(DEFAULT_PAIR[1]);
@@ -84,15 +98,32 @@ export default function Page() {
 
   const recordsById = byYear.get(year) ?? new Map();
   const recordsList = [...recordsById.values()];
-  const withSpendCount = recordsList.filter((r) => r.totalExpenses != null).length;
+  const withData = recordsList.filter((r) => r[metric] != null).length;
+  const def = METRIC_BY_KEY[metric];
 
-  // Colour scale: quantiles over all years (so colours are comparable year to year)
-  // or over the selected year only (to spread out the colours for that year).
-  const colorScale = useMemo(() => {
+  // Colour scale. Change since 2016 uses fixed bands (blue = fell, rust = grew).
+  // Other measures use quantiles over all years (comparable year to year) or the selected year only.
+  const { colorScale, legend } = useMemo((): { colorScale: (v: number) => string; legend: LegendItem[] } => {
+    if (def.diverging) {
+      const scale = d3.scaleThreshold<number, string>().domain(CHANGE_THRESHOLDS).range(CHANGE_RAMP);
+      return {
+        colorScale: (v) => scale(v),
+        legend: CHANGE_RAMP.map((color, i) => ({ color, label: CHANGE_LABELS[i]! })),
+      };
+    }
     const source = scaleMode === "all-years" ? data.records : [...recordsById.values()];
     const values = source.map((r) => r[metric]).filter((v): v is number => v != null);
-    return d3.scaleQuantile<string>().domain(values).range(SEQ_RAMP);
-  }, [metric, scaleMode, recordsById]);
+    if (values.length === 0) return { colorScale: () => NO_DATA_FILL, legend: [] };
+    const scale = d3.scaleQuantile<string>().domain(values).range(SEQ_RAMP);
+    const breaks = scale.quantiles();
+    return {
+      colorScale: (v) => scale(v),
+      legend: SEQ_RAMP.map((color, i) => ({
+        color,
+        label: i === 0 ? `Under ${def.formatShort(breaks[0]!)}` : `${def.formatShort(breaks[i - 1]!)}+`,
+      })),
+    };
+  }, [def, metric, scaleMode, recordsById]);
 
   /** Sets both comparison slots and saves the pair once both are filled. */
   function updatePair(a: string | null, b: string | null) {
@@ -158,6 +189,7 @@ export default function Page() {
                 </option>
               ))}
             </select>
+            {!def.diverging && (
             <div className="flex rounded-md border border-line bg-panel p-0.5 text-sm" role="group" aria-label="Colour scale range">
               {(
                 [
@@ -175,16 +207,10 @@ export default function Page() {
                 </button>
               ))}
             </div>
+            )}
           </div>
         </header>
 
-        {withSpendCount < recordsList.length && (
-          <p className="-mt-2 text-xs text-ink-2">
-            {withSpendCount === 0
-              ? `No spending data reported for ${year} yet — only snowfall is shown.`
-              : `${recordsList.length - withSpendCount} of ${recordsList.length} municipalities have no spending data for ${year}.`}
-          </p>
-        )}
 
         <>
         <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -218,7 +244,9 @@ export default function Page() {
               year={year}
               metric={metric}
               recordsById={recordsById}
+              seriesById={seriesById}
               colorScale={colorScale}
+              legend={legend}
               selectedA={selA}
               selectedB={selB}
               onSelect={handleMapSelect}
@@ -228,13 +256,12 @@ export default function Page() {
               {geoError ? "Could not load the boundary file." : "Loading map…"}
             </div>
           )}
-          <p className="pointer-events-none absolute top-3 right-3 rounded bg-panel/90 px-2 py-1 text-xs text-ink-2">
+          <p className="pointer-events-none absolute top-3 left-3 rounded bg-panel/90 px-2 py-1 text-xs text-ink-2">
             Click a municipality to set comparison <strong>{nextSlot}</strong>
           </p>
         </section>
         <p className="-mt-2 text-xs text-ink-2">
-          Figure: {METRIC_BY_KEY[metric].label}, {year}, for the 26 GTHA municipalities. Colour bands are quantiles, so
-          each band holds roughly the same number of municipalities.
+          Figure: {def.label}, {year}. {withData} of {recordsList.length} municipalities have data for this year.
         </p>
         <div className="-mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
           {[selA, selB].map((id, i) => {
@@ -263,6 +290,11 @@ export default function Page() {
           onChangeA={(id) => updatePair(id, selB)}
           onChangeB={(id) => updatePair(selA, id)}
         />
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <AreaComparison records={data.records} year={year} />
+          <SnowScatter records={data.records} />
+        </div>
       </main>
     </div>
   );

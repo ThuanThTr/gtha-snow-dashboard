@@ -7,9 +7,10 @@ import type { Feature, FeatureCollection, Geometry } from "geojson";
 import metricsJson from "@/data/municipal-metrics.json";
 import losJson from "@/data/level-of-service.json";
 import type { MunicipalRecord, MetricsFile } from "@/lib/types";
-import { METRIC_BY_KEY } from "@/lib/metrics";
+import { METRIC_BY_KEY, formatMetric } from "@/lib/metrics";
 import { slugify } from "@/lib/slug";
 import { ServiceLevels, type ServiceCategory, type ServiceProfile } from "@/components/ServiceLevels";
+import MunicipalityPicker, { type PickerGroup } from "@/components/MunicipalityPicker";
 
 const data = metricsJson as MetricsFile;
 const los = losJson as unknown as { categories: ServiceCategory[]; municipalities: ServiceProfile[] };
@@ -24,6 +25,14 @@ const boundaries = JSON.parse(
 ) as FeatureCollection<Geometry, BoundaryProps>;
 
 const MUNICIPALITIES = [...new Set(data.records.map((r) => r.name))].sort();
+
+/** Municipalities grouped by region, for the switch picker. */
+const PICKER_GROUPS: PickerGroup[] = [...new Set(data.records.map((r) => r.region))].map((region) => ({
+  region,
+  options: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))]
+    .sort()
+    .map((name) => ({ name, slug: slugify(name) })),
+}));
 
 /** Records for one municipality, sorted by year. */
 function recordsFor(slug: string): MunicipalRecord[] {
@@ -41,7 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const records = recordsFor(slug);
   const name = records[0]?.name ?? "Municipality";
   const title = `${name} winter maintenance spending | GTHA`;
-  const description = `Winter road maintenance spending, snowfall and spending per km for ${name}, ${data.years[0]} to ${data.years.at(-1)}, from public financial data.`;
+  const description = `Winter spending per resident, total winter spending and level of service for ${name}, ${data.years[0]} to ${data.years.at(-1)}, from provincial financial reports.`;
   return {
     title,
     description,
@@ -50,15 +59,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-const fmt = (value: number | null | undefined, digits = 0) =>
-  value == null
-    ? "n/a"
-    : new Intl.NumberFormat("en-CA", { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(value);
+/** Sidewalks and parking lots: "Included in roads" where the municipality reports them with roads (a zero). */
+const sidewalks = (r: MunicipalRecord) =>
+  r.totalExpenses == null || r.sidewalksCost == null
+    ? "No data"
+    : r.sidewalksCost === 0
+      ? "Included in roads"
+      : formatMetric("totalExpenses", r.sidewalksCost);
 
-const money = (value: number | null | undefined) =>
-  value == null
-    ? "n/a"
-    : new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(value);
+/** Regional roads share as a whole percentage; "None" for cities that run all their own roads. */
+const share = (r: MunicipalRecord) =>
+  r.regionalShare == null ? "No data" : r.regionalCost === 0 ? "None" : `${Math.round(r.regionalShare * 100)}%`;
 
 /** Hero backdrop: the GTHA boundaries with this municipality in the dashboard's dark ink. */
 function HeroMap({ name }: { name: string }) {
@@ -155,6 +166,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
               </p>
             ) : null}
           </div>
+          <MunicipalityPicker groups={PICKER_GROUPS} current={slug} />
           {serviceProfile ? (
             <ServiceLevels profile={serviceProfile} categories={los.categories} />
           ) : (
@@ -165,11 +177,53 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
         <section className="flex flex-col gap-6">
           <h2 className="text-2xl font-semibold text-ink">Latest figures, {latest.year}</h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
-            <Stat label={METRIC_BY_KEY.totalExpenses.label} value={money(latest.totalExpenses)} />
-            <Stat label={METRIC_BY_KEY.spendPerKm.label} value={money(latest.spendPerKm)} />
-            <Stat label={METRIC_BY_KEY.spendPerCapita.label} value={money(latest.spendPerCapita)} />
-            <Stat label={METRIC_BY_KEY.avgSnowMm.label} value={`${fmt(latest.avgSnowMm, 1)} mm`} />
+            <Stat label={METRIC_BY_KEY.spendPerCapita.label} value={formatMetric("spendPerCapita", latest.spendPerCapita)} />
+            <Stat label={METRIC_BY_KEY.totalExpenses.label} value={formatMetric("totalExpenses", latest.totalExpenses)} />
+            <Stat label="Regional roads share" value={share(latest)} />
+            <Stat label={METRIC_BY_KEY.avgSnowCm.label} value={formatMetric("avgSnowCm", latest.avgSnowCm)} />
           </dl>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-2xl font-semibold text-ink">Where the money goes</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-ink text-xs font-medium uppercase tracking-wide text-ink-3">
+                  <th scope="col" className="py-2 pr-4 font-medium">Year</th>
+                  <th scope="col" className="py-2 pr-4 text-right font-medium">Roads</th>
+                  <th scope="col" className="py-2 pr-4 text-right font-medium">Sidewalks and parking lots</th>
+                  <th scope="col" className="py-2 pr-4 text-right font-medium">Regional roads share</th>
+                  <th scope="col" className="py-2 text-right font-medium">Total</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {[...records].reverse().map((r) => {
+                  const missing = r.totalExpenses == null;
+                  const cell = `py-3 pr-4 text-right ${missing ? "italic text-ink-3" : "text-ink"}`;
+                  return (
+                    <tr key={r.year} className="border-b border-line">
+                      <th scope="row" className="py-3 pr-4 text-left font-medium text-ink">{r.year}</th>
+                      <td className={cell}>{missing ? "No data" : formatMetric("totalExpenses", r.roadsCost)}</td>
+                      <td className={cell}>{sidewalks(r)}</td>
+                      <td className={cell}>
+                        {missing ? "No data" : r.regionalCost === 0 ? "None" : formatMetric("regionalCost", r.regionalCost)}
+                      </td>
+                      <td className={`py-3 text-right font-semibold ${missing ? "italic text-ink-3" : "text-ink"}`}>
+                        {formatMetric("totalExpenses", r.totalExpenses)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-ink-2">
+            Roads are the municipality’s own winter control for roads, such as plowing and salting. Some municipalities
+            report sidewalks and parking lots together with roads, which is shown as “Included in roads”. The regional
+            roads share is this municipality’s population share of its Region’s road costs. Contractor and materials
+            costs are not reported separately in the provincial figures.
+          </p>
         </section>
 
         <section className="flex flex-col gap-4">
@@ -179,30 +233,35 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
               <thead>
                 <tr className="border-b border-ink text-xs font-medium uppercase tracking-wide text-ink-3">
                   <th scope="col" className="py-2 pr-4 font-medium">Year</th>
-                  <th scope="col" className="py-2 pr-4 text-right font-medium">Spending</th>
-                  <th scope="col" className="py-2 pr-4 text-right font-medium">Spend per km</th>
-                  <th scope="col" className="py-2 pr-4 text-right font-medium">Spend per resident</th>
-                  <th scope="col" className="py-2 text-right font-medium">Average snowfall</th>
+                  <th scope="col" className="py-2 pr-4 text-right font-medium">Per resident</th>
+                  <th scope="col" className="py-2 pr-4 text-right font-medium">Total spending</th>
+                  <th scope="col" className="py-2 pr-4 text-right font-medium">Regional roads share</th>
+                  <th scope="col" className="py-2 text-right font-medium">Snowfall (estimated)</th>
                 </tr>
               </thead>
               <tbody className="tabular-nums">
-                {[...records].reverse().map((r) => (
-                  <tr key={r.year} className="border-b border-line">
-                    <th scope="row" className="py-3 pr-4 text-left font-medium text-ink">{r.year}</th>
-                    <td className="py-3 pr-4 text-right text-ink">{money(r.totalExpenses)}</td>
-                    <td className="py-3 pr-4 text-right text-ink">{money(r.spendPerKm)}</td>
-                    <td className="py-3 pr-4 text-right text-ink">{money(r.spendPerCapita)}</td>
-                    <td className="py-3 text-right text-ink">
-                      {r.avgSnowMm == null ? "n/a" : `${fmt(r.avgSnowMm, 1)} mm`}
-                    </td>
-                  </tr>
-                ))}
+                {[...records].reverse().map((r) => {
+                  const missing = r.totalExpenses == null;
+                  const cell = `py-3 pr-4 text-right ${missing ? "italic text-ink-3" : "text-ink"}`;
+                  return (
+                    <tr key={r.year} className="border-b border-line">
+                      <th scope="row" className="py-3 pr-4 text-left font-medium text-ink">{r.year}</th>
+                      <td className={cell}>{formatMetric("spendPerCapita", r.spendPerCapita)}</td>
+                      <td className={cell}>{formatMetric("totalExpenses", r.totalExpenses)}</td>
+                      <td className={cell}>{share(r)}</td>
+                      <td className="py-3 text-right text-ink">{formatMetric("avgSnowCm", r.avgSnowCm)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
           <p className="text-xs text-ink-2">
-            n/a means the value is missing for that year. Spending comes from the Financial Information Return. See the{" "}
-            <Link href="/" className="underline underline-offset-2">dashboard methodology</Link> for how each figure is
+            No data means {name} did not report that year; it does not mean nothing was spent. Spending comes from
+            provincial financial reports and covers roads, sidewalks and parking lots, plus a population share of regional
+            road costs where a Region maintains some roads. Spending differences reflect service levels, road networks and
+            contracts, not just snowfall. Snowfall figures are estimates. See the{" "}
+            <Link href="/project" className="underline underline-offset-2">project description</Link> for how each figure is
             calculated.
           </p>
         </section>

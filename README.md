@@ -14,24 +14,31 @@ npm run build    # runs the data script, then writes the static site to /out
 
 Inputs (kept in the repo so Vercel can rebuild):
 
-- `data/avg-snow-by-municipality.csv` — wide, one `total-avg-snow-YYYY` column per year
-- `data/fir-data.csv` — FIR winter control expenses per municipality per year
-- `data/municipality-directory.csv` — population (2016, 2021), road length (2019)
+- `data/winter-costs.csv` — one row per municipality per year, 2015–2025: total winter cost (roads 0621 + sidewalks 0622 + population share of the Region's road costs), cost per resident, 2021 population and estimated snowfall in cm. Exported from the "Clean Data" sheet of `data/winter_costs.xlsx`, with `mun-id` added from its "Annual Snowfall" sheet. Blank totals mean the municipality did not report that year.
+- `data/municipality-directory.csv` — names and regions (its road-length column is no longer read)
 - `geospatial data/Municipal_Boun_FeaturesToJSO.geojson`
 
-Steps: unpivot snow to long format → join all three on `mun-id` → population = 2016 Census for years ≤ 2016, else 2021 → compute indicators (null when an input is missing) → filter the GeoJSON to GTHA municipalities, fix ring winding for D3 and round coordinates.
+Steps: read winter costs → join the directory on `mun-id` → compute measures (null when an input is missing, never 0), including change in cost per resident since 2016 and the regional roads share → filter the GeoJSON to GTHA municipalities, fix ring winding for D3 and round coordinates.
+
+The 2025 rows for Aurora, Brock and East Gwillimbury were added to the CSV from a later FIR extract, `data/fir-2025-update.csv` (total = 0621 + 0622 + the workbook's allocated regional cost). The workbook does not have them yet, so add them there before re-exporting, or they will be lost.
+
+If the workbook changes, re-export the CSV before running `npm run data`. Public-facing text avoids "FIR", "tier" and the 0621/0622 codes.
 
 Outputs: `src/data/municipal-metrics.json` (bundled into the page) and `public/data/gtha-boundaries.geojson` (fetched by the map).
 
-Assumptions (`ASSUMPTIONS` in the script): 8 m average road width, 0.1 t/m³ fresh-snow density.
+Road length and the snow-mass estimates were removed because the road-length figures are not reliable across municipalities.
 
 ## Code map
 
 - `src/app/page.tsx` — left/right layout and shared state (year, metric, comparison picks)
-- `src/components/Sidebar.tsx` — About, Findings, Methods, Data sources, year slider
-- `src/components/Map.tsx` — D3 choropleth, legend, hover tooltip, click-to-compare
+- `src/components/Sidebar.tsx` — overview text and link to the project description
+- `src/app/project/page.tsx` — project description: key findings cards, methods, worked example, limitations, data sources
+- `src/components/Map.tsx` — D3 choropleth, legend, hover panel (rank, trend line, own vs regional share), click-to-compare
 - `src/components/Comparison.tsx` — A vs B table and trend chart
+- `src/components/StoryCards.tsx` — findings cards (shown on the project description page)
+- `src/components/AreaComparison.tsx`, `SnowScatter.tsx` — area bars and snowfall vs spending chart on the dashboard
 - `src/lib/metrics.ts` — metric definitions, formatters, colours
+- `src/lib/insights.ts` — headline year and the summaries behind the cards and charts
 
 ## Deploy to Vercel
 
