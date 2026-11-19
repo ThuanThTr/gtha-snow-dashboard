@@ -5,8 +5,7 @@
  *   src/data/municipal-metrics.json   – one record per municipality per year (long format)
  *   public/data/gtha-boundaries.geojson – GTHA polygons only, trimmed for the web
  *
- * Spending and snowfall come from data/winter-costs.csv (exported from data/winter_costs.xlsx,
- * "Clean Data" sheet, plus the 2025 rows in data/fir-2025-update.csv). Names and regions come
+ * Spending and snowfall come from data/winter-costs.csv, the single source. Names and regions come
  * from data/municipality-directory.csv.
  *
  * Run with: npm run data   (also runs automatically before `npm run build`)

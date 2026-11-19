@@ -14,15 +14,13 @@ npm run build    # runs the data script, then writes the static site to /out
 
 Inputs (kept in the repo so Vercel can rebuild):
 
-- `data/winter-costs.csv` — one row per municipality per year, 2015–2025: total winter cost (roads 0621 + sidewalks 0622 + population share of the Region's road costs), cost per resident, 2021 population and estimated snowfall in cm. Exported from the "Clean Data" sheet of `data/winter_costs.xlsx`, with `mun-id` added from its "Annual Snowfall" sheet. Blank totals mean the municipality did not report that year.
+- `data/winter-costs.csv` — the single source for spending and snowfall. One row per municipality per year, 2015–2025: roads (0621), sidewalks and parking lots (0622), the population share of the Region's road costs, the total, cost per resident, 2021 population and estimated snowfall in cm. Edit this file directly. Blank totals mean the municipality did not report that year. Sidewalk zeros mean the municipality reports them with roads.
 - `data/municipality-directory.csv` — names and regions (its road-length column is no longer read)
 - `geospatial data/Municipal_Boun_FeaturesToJSO.geojson`
 
 Steps: read winter costs → join the directory on `mun-id` → compute measures (null when an input is missing, never 0), including change in cost per resident since 2016 and the regional roads share → filter the GeoJSON to GTHA municipalities, fix ring winding for D3 and round coordinates.
 
-The 2025 rows for Aurora, Brock and East Gwillimbury were added to the CSV from a later FIR extract, `data/fir-2025-update.csv` (total = 0621 + 0622 + the workbook's allocated regional cost). The workbook does not have them yet, so add them there before re-exporting, or they will be lost.
-
-If the workbook changes, re-export the CSV before running `npm run data`. Public-facing text avoids "FIR", "tier" and the 0621/0622 codes.
+After editing `winter-costs.csv`, run `npm run data` to rebuild the data files. Public-facing text avoids "FIR", "tier" and the 0621/0622 codes.
 
 Outputs: `src/data/municipal-metrics.json` (bundled into the page) and `public/data/gtha-boundaries.geojson` (fetched by the map).
 
