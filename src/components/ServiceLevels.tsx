@@ -1,4 +1,17 @@
 import type { ReactNode } from "react";
+import {
+  BODY,
+  JUSTIFY,
+  LIST,
+  SUBHEADING,
+  TABLE,
+  TABLE_CELL,
+  TABLE_HEAD_ROW,
+  TABLE_MISSING,
+  TABLE_ROW,
+  TABLE_ROW_HEADER,
+  TABLE_TH,
+} from "@/lib/typography";
 
 type CategoryKey = "expressway" | "arterial" | "collector" | "local" | "sidewalks" | "cycling" | "windrows" | "busStops";
 
@@ -27,7 +40,7 @@ export interface ServiceCategory {
   label: string;
 }
 
-const NA: ReactNode = <span className="italic text-ink-3">n/a</span>;
+const NA: ReactNode = <span className={TABLE_MISSING}>n/a</span>;
 
 const REGION_NAMES = ["Peel", "Halton", "Durham", "York"];
 const WHO: Record<string, { who: string; plural?: boolean }> = {
@@ -94,11 +107,11 @@ function TriggerRuler({ rows }: { rows: { label: string; depth: number }[] }) {
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <h3 className="text-base font-semibold text-ink">Plowing trigger depth</h3>
-        <p className="text-xs text-ink-2">The snow depth at which plowing starts, shown on a 0 to 12 cm scale.</p>
+        <h3 className={SUBHEADING}>Plowing trigger depth</h3>
+        <p className={BODY}>The snow depth at which plowing starts, shown on a 0 to 12 cm scale.</p>
       </div>
       {rows.length === 0 ? (
-        <p className="text-sm text-ink-2">{NA}</p>
+        <p className={BODY}>{NA}</p>
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map(({ label, depth }) => (
@@ -157,14 +170,9 @@ export function ServiceLevels({
 
   return (
     <div className="flex flex-col gap-8">
-      <details className="group text-sm text-ink-2">
-        <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-ink [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-4">
-          About these figures
-          <span aria-hidden="true" className="text-xs text-ink-3 transition-transform group-open:rotate-180">
-            ▼
-          </span>
-        </summary>
-        <div className="mt-3 flex flex-col gap-2 leading-relaxed">
+      <section className={`${BODY} ${JUSTIFY}`}>
+        <h3 className={SUBHEADING}>About these figures</h3>
+        <div className="mt-2 flex flex-col gap-2 leading-relaxed">
           <p>
             Figures are as each municipality publishes them. {NA} means the value is not published, could not be verified,
             or sources disagree.
@@ -174,12 +182,12 @@ export function ServiceLevels({
             round), so compare them with care.
           </p>
         </div>
-      </details>
+      </section>
 
       <section className="flex flex-col gap-4">
-        <h3 className="text-base font-semibold text-ink">Who is responsible</h3>
+        <h3 className={SUBHEADING}>Who is responsible</h3>
         {profile.responsibility ? (
-          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-ink-2">
+          <ul className={LIST}>
             {responsibilityBullets(profile.responsibility).map((item, i) => (
               <li key={i}>
                 {item.who ? (
@@ -194,7 +202,7 @@ export function ServiceLevels({
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-ink-2">{NA}</p>
+          <p className={BODY}>{NA}</p>
         )}
       </section>
 
@@ -209,23 +217,23 @@ export function ServiceLevels({
       />
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+        <table className={`${TABLE} min-w-[640px]`}>
           <thead>
-            <tr className="border-b border-ink text-xs font-medium text-ink-3">
-              <th scope="col" className="py-2 pr-4 font-medium">Road type</th>
-              <th scope="col" className="py-2 pr-4 font-medium">Salting trigger</th>
-              <th scope="col" className="py-2 pr-4 font-medium">Plowing trigger</th>
-              <th scope="col" className="py-2 pr-4 font-medium">Completion time</th>
-              <th scope="col" className="py-2 pr-4 font-medium">Target surface</th>
-              <th scope="col" className="py-2 font-medium">MMS class</th>
+            <tr className={TABLE_HEAD_ROW}>
+              <th scope="col" className={TABLE_TH}>Road type</th>
+              <th scope="col" className={TABLE_TH}>Salting trigger</th>
+              <th scope="col" className={TABLE_TH}>Plowing trigger</th>
+              <th scope="col" className={TABLE_TH}>Completion time</th>
+              <th scope="col" className={TABLE_TH}>Target surface</th>
+              <th scope="col" className={TABLE_TH}>MMS class</th>
             </tr>
           </thead>
           <tbody>
             {categories.map(({ key, label }) => {
               const level = profile.levels[key] ?? null;
               return (
-                <tr key={key} className="border-b border-line align-top">
-                  <th scope="row" className="py-3 pr-4 font-semibold text-ink">
+                <tr key={key} className={TABLE_ROW}>
+                  <th scope="row" className={TABLE_ROW_HEADER}>
                     {label}
                     {level?.terminology && (
                       <span className="mt-0.5 block text-xs font-normal text-ink-3">{level.terminology}</span>
@@ -233,14 +241,14 @@ export function ServiceLevels({
                   </th>
                   {level ? (
                     <>
-                      <td className="py-3 pr-4 text-ink">{level.salting ?? NA}</td>
-                      <td className="py-3 pr-4 text-ink">{level.plowing ?? NA}</td>
-                      <td className="py-3 pr-4 text-ink">{level.completion ?? NA}</td>
-                      <td className="py-3 pr-4 text-ink">{level.surface ?? NA}</td>
-                      <td className="py-3 text-ink">{level.mmsClass ?? NA}</td>
+                      <td className={`${TABLE_CELL} text-ink`}>{level.salting ?? NA}</td>
+                      <td className={`${TABLE_CELL} text-ink`}>{level.plowing ?? NA}</td>
+                      <td className={`${TABLE_CELL} text-ink`}>{level.completion ?? NA}</td>
+                      <td className={`${TABLE_CELL} text-ink`}>{level.surface ?? NA}</td>
+                      <td className={`${TABLE_CELL} text-ink`}>{level.mmsClass ?? NA}</td>
                     </>
                   ) : (
-                    <td colSpan={5} className="py-3 text-ink-3">
+                    <td colSpan={5} className={`${TABLE_CELL} ${TABLE_MISSING}`}>
                       {key === "expressway" ? "Not applicable (no municipal expressways)" : NA}
                     </td>
                   )}
@@ -252,7 +260,7 @@ export function ServiceLevels({
       </div>
 
       {withNotes.length > 0 && (
-        <ul className="flex flex-col gap-2 text-xs leading-relaxed text-ink-2">
+        <ul className="flex flex-col gap-2 text-base leading-relaxed text-ink-2">
           {withNotes.map(({ key, label }) => {
             const level = profile.levels[key]!;
             return (

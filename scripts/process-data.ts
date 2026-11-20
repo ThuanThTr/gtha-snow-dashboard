@@ -5,7 +5,7 @@
  *   src/data/municipal-metrics.json   – one record per municipality per year (long format)
  *   public/data/gtha-boundaries.geojson – GTHA polygons only, trimmed for the web
  *
- * Spending and snowfall come from data/winter-costs.csv, the single source. Names and regions come
+ * Spending and snowfall come from data/winter-costs-update-20-11-26.csv, the single source. Names and regions come
  * from data/municipality-directory.csv.
  *
  * Run with: npm run data   (also runs automatically before `npm run build`)
@@ -19,7 +19,7 @@ import type { MunicipalRecord, MetricsFile } from "../src/lib/types";
 
 const ROOT = process.cwd();
 const RAW = {
-  costs: path.join(ROOT, "data/winter-costs.csv"),
+  costs: path.join(ROOT, "data/winter-costs-update-20-11-26.csv"),
   directory: path.join(ROOT, "data/municipality-directory.csv"),
   geo: path.join(ROOT, "geospatial data/Municipal_Boun_FeaturesToJSO.geojson"),
 };
@@ -92,6 +92,7 @@ for (const row of readCsv(RAW.costs)) {
   const reported = totalExpenses != null;
   const localCost = reported ? num(row["local-winter-cost"]) : null;
   const regionalCost = reported ? (num(row["allocated-region-cost"]) ?? 0) : null;
+  const operatingExpense = num(row["municipality-total-expense"]);
 
   records.push({
     munId,
@@ -110,6 +111,8 @@ for (const row of readCsv(RAW.costs)) {
     population,
     spendPerCapita: safeDiv(totalExpenses, population),
     changeSince2016: null, // filled in below, once every year is loaded
+    operatingExpense,
+    winterShareOfOperating: safeDiv(totalExpenses, operatingExpense),
   });
 }
 
@@ -127,6 +130,8 @@ records.sort((a, b) => a.name.localeCompare(b.name) || a.year - b.year);
 const years = [...new Set(records.map((r) => r.year))].sort((a, b) => a - b);
 
 for (const r of records.filter((r) => r.totalExpenses == null)) warnings.push(`Not reported: ${r.name} ${r.year}`);
+for (const r of records.filter((r) => r.totalExpenses != null && r.operatingExpense == null))
+  warnings.push(`No operating expense: ${r.name} ${r.year}`);
 
 const metricsFile: MetricsFile = {
   generatedAt: new Date().toISOString(),

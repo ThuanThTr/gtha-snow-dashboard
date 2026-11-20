@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { MunicipalRecord } from "@/lib/types";
 import { snowVsSpending } from "@/lib/insights";
+import { gthaAverageRecords } from "@/lib/metrics";
 
 const H = 300;
 const M = { top: 16, right: 20, bottom: 44, left: 56 };
@@ -14,6 +15,14 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
   const [width, setWidth] = useState(0);
   const points = useMemo(() => snowVsSpending(records), [records]);
   const years = useMemo(() => [...new Set(records.map((r) => r.year))].sort((a, b) => a - b), [records]);
+  // GTHA average over all years: mean of the yearly GTHA-wide spending per resident and of yearly average snowfall.
+  const gtha = useMemo(() => {
+    const avg = gthaAverageRecords(records);
+    return {
+      perResident: d3.mean(avg, (r) => r.spendPerCapita ?? undefined) ?? null,
+      snow: d3.mean(avg, (r) => r.avgSnowCm ?? undefined) ?? null,
+    };
+  }, [records]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -89,6 +98,47 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
               </text>
             ))}
             <line x1={M.left} x2={M.left + innerW} y1={H - M.bottom} y2={H - M.bottom} stroke="#c8e0f4" />
+            {gtha.snow != null && (
+              <g>
+                <line
+                  x1={x(gtha.snow)}
+                  x2={x(gtha.snow)}
+                  y1={M.top}
+                  y2={H - M.bottom}
+                  stroke="#b5461a"
+                  strokeDasharray="4 3"
+                  strokeOpacity={0.6}
+                />
+                <text x={x(gtha.snow) + 4} y={M.top + 4} dy="0.32em" fontSize={11} fill="#b5461a">
+                  GTHA avg {Math.round(gtha.snow)} cm
+                </text>
+              </g>
+            )}
+            {gtha.perResident != null && (
+              <g>
+                <line
+                  x1={M.left}
+                  x2={M.left + innerW}
+                  y1={y(gtha.perResident)}
+                  y2={y(gtha.perResident)}
+                  stroke="#b5461a"
+                  strokeDasharray="4 3"
+                />
+                <text
+                  x={M.left + innerW}
+                  y={y(gtha.perResident) - 6}
+                  textAnchor="end"
+                  fontSize={11}
+                  fontWeight={600}
+                  fill="#b5461a"
+                  stroke="#ffffff"
+                  strokeWidth={3}
+                  paintOrder="stroke"
+                >
+                  GTHA average ${Math.round(gtha.perResident)} per resident
+                </text>
+              </g>
+            )}
             <text x={M.left + innerW / 2} y={H - 6} textAnchor="middle" fontSize={11} fill="#4a6a88">
               Average snowfall per year (estimated, cm)
             </text>
@@ -136,7 +186,8 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
         )}
       </div>
       <p className="text-xs text-ink-2">
-        Each dot is one municipality, sized by population. The snowy, rural ones sit higher on the chart, Uxbridge most
+        Each dot is one municipality, sized by population. Dashed lines mark the GTHA average (spending per resident is
+        GTHA-wide: total spending ÷ total population, averaged over {years[0]}–{years.at(-1)}). The snowy, rural ones sit higher on the chart, Uxbridge most
         of all. Snow is one reason. Service levels, road networks and contracts drive the cost too. And the snowfall
         numbers are estimates.
       </p>

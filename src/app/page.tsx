@@ -5,6 +5,7 @@ import * as d3 from "d3";
 import type { FeatureCollection, Geometry } from "geojson";
 
 import Sidebar from "@/components/Sidebar";
+import SiteHeader from "@/components/SiteHeader";
 import GthaMap, { type LegendItem, type MunFeatureProps } from "@/components/Map";
 import Comparison from "@/components/Comparison";
 import AreaComparison from "@/components/AreaComparison";
@@ -22,13 +23,18 @@ import {
   indexRecords,
   seriesByMunicipality,
   type MetricKey,
-  type ScaleMode,
 } from "@/lib/metrics";
 import { HEADLINE_YEAR } from "@/lib/insights";
 import type { MetricsFile } from "@/lib/types";
 
 /** Measures offered in the map dropdown, in display order. */
-const DROPDOWN_METRICS: MetricKey[] = ["spendPerCapita", "totalExpenses", "changeSince2016", "avgSnowCm"];
+const DROPDOWN_METRICS: MetricKey[] = [
+  "spendPerCapita",
+  "totalExpenses",
+  "winterShareOfOperating",
+  "changeSince2016",
+  "avgSnowCm",
+];
 
 const data = metricsJson as MetricsFile;
 const byYear = indexRecords(data.records);
@@ -63,22 +69,22 @@ function savePair(a: string, b: string) {
   }
 }
 
-/** Municipality names grouped by region, for the "open a municipality page" picker. */
-const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map((region) => ({
-  region,
-  names: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))].sort(),
-}));
 
 
 export default function Page() {
+  const [tab, setTab] = useState<"dashboard" | "overview">("dashboard");
   const [year, setYear] = useState(HEADLINE_YEAR);
   const [metric, setMetric] = useState<MetricKey>("spendPerCapita");
-  const [scaleMode, setScaleMode] = useState<ScaleMode>("all-years");
   const [selA, setSelA] = useState<string | null>(DEFAULT_PAIR[0]);
   const [selB, setSelB] = useState<string | null>(DEFAULT_PAIR[1]);
   const [nextSlot, setNextSlot] = useState<"A" | "B">("A");
   const [geo, setGeo] = useState<FeatureCollection<Geometry, MunFeatureProps> | null>(null);
   const [geoError, setGeoError] = useState(false);
+
+  // Open the Overview tab when linked as "/?tab=overview" (e.g. from a profile page).
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("tab") === "overview") setTab("overview");
+  }, []);
 
   // Restore the last saved pair after mount, so the server render matches the default.
   useEffect(() => {
@@ -102,7 +108,7 @@ export default function Page() {
   const def = METRIC_BY_KEY[metric];
 
   // Colour scale. Change since 2016 uses fixed bands (blue = fell, rust = grew).
-  // Other measures use quantiles over all years (comparable year to year) or the selected year only.
+  // Other measures use quantiles over the selected year only.
   const { colorScale, legend } = useMemo((): { colorScale: (v: number) => string; legend: LegendItem[] } => {
     if (def.diverging) {
       const scale = d3.scaleThreshold<number, string>().domain(CHANGE_THRESHOLDS).range(CHANGE_RAMP);
@@ -111,8 +117,7 @@ export default function Page() {
         legend: CHANGE_RAMP.map((color, i) => ({ color, label: CHANGE_LABELS[i]! })),
       };
     }
-    const source = scaleMode === "all-years" ? data.records : [...recordsById.values()];
-    const values = source.map((r) => r[metric]).filter((v): v is number => v != null);
+    const values = [...recordsById.values()].map((r) => r[metric]).filter((v): v is number => v != null);
     if (values.length === 0) return { colorScale: () => NO_DATA_FILL, legend: [] };
     const scale = d3.scaleQuantile<string>().domain(values).range(SEQ_RAMP);
     const breaks = scale.quantiles();
@@ -123,7 +128,7 @@ export default function Page() {
         label: i === 0 ? `Under ${def.formatShort(breaks[0]!)}` : `${def.formatShort(breaks[i - 1]!)}+`,
       })),
     };
-  }, [def, metric, scaleMode, recordsById]);
+  }, [def, metric, recordsById]);
 
   /** Sets both comparison slots and saves the pair once both are filled. */
   function updatePair(a: string | null, b: string | null) {
@@ -139,16 +144,29 @@ export default function Page() {
     setNextSlot(nextSlot === "A" ? "B" : "A");
   }
 
-  return (
-    <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
-      {/* Left: context & controls */}
-      <aside className="w-full shrink-0 border-b border-line bg-panel lg:w-[380px] lg:overflow-y-auto lg:border-r lg:border-b-0">
-        <Sidebar />
-      </aside>
+  /** Switches tabs and keeps the URL in step, so "/?tab=overview" links work. */
+  function changeTab(next: "dashboard" | "overview") {
+    setTab(next);
+    window.history.replaceState(null, "", next === "overview" ? "/?tab=overview" : "/");
+  }
 
-      {/* Right: visualization */}
-      <main className="flex min-w-0 flex-1 flex-col gap-4 p-4 lg:overflow-y-auto lg:p-6">
-        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  return (
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader active={tab} onTab={changeTab} />
+
+      {tab === "overview" ? (
+        <main id="panel-overview" className="w-full">
+          <Sidebar />
+        </main>
+      ) : (
+      <main
+        id="panel-dashboard"
+        className="flex min-w-0 flex-1 flex-col gap-4 p-4 lg:p-6"
+      >
+        {/* Map on the left, comparison on the right, so both are visible together */}
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{METRIC_BY_KEY[metric].label}</h2>
           </div>
@@ -189,55 +207,10 @@ export default function Page() {
                 </option>
               ))}
             </select>
-            {!def.diverging && (
-            <div className="flex rounded-md border border-line bg-panel p-0.5 text-sm" role="group" aria-label="Colour scale range">
-              {(
-                [
-                  ["all-years", "Scale: all years"],
-                  ["this-year", "Scale: this year"],
-                ] as const
-              ).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  onClick={() => setScaleMode(mode)}
-                  aria-pressed={scaleMode === mode}
-                  className={`rounded px-2.5 py-1 ${scaleMode === mode ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            )}
           </div>
-        </header>
-
-
-        <>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <label htmlFor="open-municipality" className="font-medium">
-            Municipality page
-          </label>
-          <select
-            id="open-municipality"
-            defaultValue=""
-            onChange={(e) => {
-              if (e.target.value) window.location.href = `/municipality/${e.target.value}`;
-            }}
-            className="rounded-md border border-line bg-panel px-2 py-1 text-sm"
-          >
-            <option value="">Open a municipality page…</option>
-            {MUNICIPALITY_GROUPS.map(({ region, names }) => (
-              <optgroup key={region} label={region}>
-                {names.map((name) => (
-                  <option key={name} value={slugify(name)}>
-                    {name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
         </div>
-        <section className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-line bg-panel lg:min-h-[480px]">
+
+        <section className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-line bg-panel lg:min-h-[520px]">
           {geo ? (
             <GthaMap
               geo={geo}
@@ -273,12 +246,12 @@ export default function Page() {
                 href={`/municipality/${slugify(rec.name)}`}
                 className="text-ink underline underline-offset-2"
               >
-                Open {rec.name} page →
+                Open {rec.name} profile →
               </Link>
             );
           })}
         </div>
-        </>
+        </div>
 
         <Comparison
           records={data.records}
@@ -290,12 +263,14 @@ export default function Page() {
           onChangeA={(id) => updatePair(id, selB)}
           onChangeB={(id) => updatePair(selA, id)}
         />
+        </div>
 
         <div className="grid gap-4 xl:grid-cols-2">
           <AreaComparison records={data.records} year={year} />
           <SnowScatter records={data.records} />
         </div>
       </main>
+      )}
     </div>
   );
 }

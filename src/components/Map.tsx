@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { Map as MapLibreMap, type MapMouseEvent, setWorkerUrl } from "maplibre-gl";
@@ -8,6 +8,14 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { MunicipalRecord } from "@/lib/types";
 import { METRIC_BY_KEY, NO_DATA_FILL, SERIES_A, SERIES_B, formatMetric, ordinal, type MetricKey } from "@/lib/metrics";
+
+/** Secondary rows in the hover card; the row matching the map's measure is shown as the headline instead. */
+const TOOLTIP_DETAILS: { key: MetricKey; label: string }[] = [
+  { key: "spendPerCapita", label: "Spending per resident" },
+  { key: "totalExpenses", label: "Total winter spending" },
+  { key: "winterShareOfOperating", label: "Share of operating expenses" },
+  { key: "avgSnowCm", label: "Average snowfall (estimated)" },
+];
 
 export interface MunFeatureProps {
   munId: string;
@@ -322,10 +330,10 @@ export default function GthaMap({
   // ---- rank of each municipality by spending per resident in the active year ----
   const ranking = useMemo(() => {
     const ordered = [...recordsById.values()]
-      .filter((r) => r.spendPerCapita != null)
-      .sort((a, b) => b.spendPerCapita! - a.spendPerCapita!);
+      .filter((r) => r[metric] != null)
+      .sort((a, b) => b[metric]! - a[metric]!);
     return { rankById: new Map(ordered.map((r, i) => [r.munId, i + 1])), count: ordered.length };
-  }, [recordsById]);
+  }, [recordsById, metric]);
 
   // ---- tooltip ----
   const hovered = hover ? recordsById.get(hover.munId) : undefined;
@@ -391,9 +399,12 @@ export default function GthaMap({
             <div className="flex flex-col gap-2">
               <div>
                 <p className="text-2xl font-semibold tabular-nums leading-tight text-ink">
-                  {formatMetric("spendPerCapita", hovered.spendPerCapita)}
-                  <span className="ml-1 text-sm font-normal text-ink-2">per resident</span>
+                  {formatMetric(metric, hovered[metric])}
+                  {metric === "spendPerCapita" && (
+                    <span className="ml-1 text-sm font-normal text-ink-2">per resident</span>
+                  )}
                 </p>
+                {metric !== "spendPerCapita" && <p className="text-xs text-ink-2">{METRIC_BY_KEY[metric].label}</p>}
                 {ranking.rankById.has(hovered.munId) && (
                   <p className="text-xs text-ink-2">
                     {ordinal(ranking.rankById.get(hovered.munId)!)} highest of the {ranking.count} municipalities
@@ -402,18 +413,12 @@ export default function GthaMap({
                 )}
               </div>
               <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 text-xs">
-                <dt className="text-ink-2">Total winter spending</dt>
-                <dd className="text-right tabular-nums text-ink">{formatMetric("totalExpenses", hovered.totalExpenses)}</dd>
-                {metric === "changeSince2016" && (
-                  <>
-                    <dt className="text-ink-2">Change since 2016</dt>
-                    <dd className="text-right tabular-nums text-ink">
-                      {formatMetric("changeSince2016", hovered.changeSince2016)}
-                    </dd>
-                  </>
-                )}
-                <dt className="text-ink-2">Average snowfall (estimated)</dt>
-                <dd className="text-right tabular-nums text-ink">{formatMetric("avgSnowCm", hovered.avgSnowCm)}</dd>
+                {TOOLTIP_DETAILS.filter((d) => d.key !== metric).map((d) => (
+                  <Fragment key={d.key}>
+                    <dt className="text-ink-2">{d.label}</dt>
+                    <dd className="text-right tabular-nums text-ink">{formatMetric(d.key, hovered[d.key])}</dd>
+                  </Fragment>
+                ))}
               </dl>
               <ShareBar record={hovered} />
             </div>

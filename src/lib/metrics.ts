@@ -11,15 +11,15 @@ export const NO_DATA_FILL = "#e3f2fc";
 export const SERIES_A = "#2a78d6";
 export const SERIES_B = "#b5461a"; // Plow rust: 5.4:1 with white badge text
 
-export type ScaleMode = "all-years" | "this-year";
-
 export type MetricKey =
   | "spendPerCapita"
   | "totalExpenses"
   | "localCost"
   | "regionalCost"
   | "changeSince2016"
-  | "avgSnowCm";
+  | "avgSnowCm"
+  | "operatingExpense"
+  | "winterShareOfOperating";
 
 export interface MetricDef {
   key: MetricKey;
@@ -85,6 +85,18 @@ export const METRICS: MetricDef[] = [
     format: (v) => `${whole.format(v)} cm`,
     formatShort: (v) => `${whole.format(v)} cm`,
   },
+  {
+    key: "operatingExpense",
+    label: "Total operating expenses",
+    format: formatMoneyLong,
+    formatShort: (v) => `$${compact.format(v)}`,
+  },
+  {
+    key: "winterShareOfOperating",
+    label: "Winter spending as a share of operating expenses",
+    format: (v) => `${dec1.format(v * 100)}%`,
+    formatShort: (v) => `${dec1.format(v * 100)}%`,
+  },
 ];
 
 export const METRIC_BY_KEY = Object.fromEntries(METRICS.map((m) => [m.key, m])) as Record<MetricKey, MetricDef>;
@@ -120,4 +132,63 @@ export function ordinal(n: number): string {
   const mod100 = n % 100;
   if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
   return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
+
+/** Pseudo-municipality id for the GTHA-wide average. */
+export const GTHA_AVG_ID = "gtha-average";
+
+/**
+ * One synthetic record per year for the whole GTHA, so a municipality can be compared to it.
+ * Dollar totals and snowfall are the mean across municipalities that report that measure that year
+ * (the "average municipality"). Spending per resident is GTHA-wide: total spending ÷ total population
+ * of the reporting municipalities. Change since 2016 is measured on that GTHA-wide per-resident figure.
+ * The share of operating expenses is also GTHA-wide: total winter spending ÷ total operating expenses.
+ */
+export function gthaAverageRecords(records: MunicipalRecord[]): MunicipalRecord[] {
+  const mean = (rows: MunicipalRecord[], key: keyof MunicipalRecord): number | null => {
+    const vals = rows.map((r) => r[key]).filter((v): v is number => typeof v === "number");
+    return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null;
+  };
+  const byYear = indexRecords(records);
+  const years = [...byYear.keys()].sort((a, b) => a - b);
+  const perCapita = new Map<number, number | null>();
+  const out: MunicipalRecord[] = years.map((year) => {
+    const rows = [...byYear.get(year)!.values()];
+    const reporting = rows.filter((r) => r.totalExpenses != null && r.population != null);
+    const spend = reporting.reduce((s, r) => s + r.totalExpenses!, 0);
+    const pop = reporting.reduce((s, r) => s + r.population!, 0);
+    const pc = pop > 0 ? spend / pop : null;
+    perCapita.set(year, pc);
+    const totalExpenses = mean(rows, "totalExpenses");
+    const regionalCost = mean(rows, "regionalCost");
+    // GTHA-wide share: winter spending ÷ operating expenses, over municipalities reporting both.
+    const both = rows.filter((r) => r.totalExpenses != null && r.operatingExpense != null);
+    const opex = both.reduce((s, r) => s + r.operatingExpense!, 0);
+    const winterShareOfOperating = opex > 0 ? both.reduce((s, r) => s + r.totalExpenses!, 0) / opex : null;
+    return {
+      munId: GTHA_AVG_ID,
+      name: "GTHA average",
+      fullName: "Greater Toronto and Hamilton Area average",
+      region: "GTHA",
+      area: "GTHA",
+      year,
+      avgSnowCm: mean(rows, "avgSnowCm"),
+      totalExpenses,
+      localCost: mean(rows, "localCost"),
+      roadsCost: mean(rows, "roadsCost"),
+      sidewalksCost: mean(rows, "sidewalksCost"),
+      regionalCost,
+      regionalShare: totalExpenses && regionalCost != null ? regionalCost / totalExpenses : null,
+      population: mean(rows, "population"),
+      spendPerCapita: pc,
+      changeSince2016: null,
+      operatingExpense: mean(rows, "operatingExpense"),
+      winterShareOfOperating,
+    };
+  });
+  const base = perCapita.get(2016);
+  for (const r of out) {
+    if (r.year > 2016 && base && r.spendPerCapita != null) r.changeSince2016 = r.spendPerCapita / base - 1;
+  }
+  return out;
 }

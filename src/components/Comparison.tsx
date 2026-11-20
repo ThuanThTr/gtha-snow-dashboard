@@ -3,10 +3,26 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { MunicipalRecord } from "@/lib/types";
-import { METRIC_BY_KEY, SERIES_A, SERIES_B, formatMetric, type MetricKey } from "@/lib/metrics";
+import {
+  GTHA_AVG_ID,
+  METRIC_BY_KEY,
+  SERIES_A,
+  SERIES_B,
+  formatMetric,
+  gthaAverageRecords,
+  type MetricKey,
+} from "@/lib/metrics";
 
 /** Rows of the side-by-side table, in display order. */
-const TABLE_KEYS: MetricKey[] = ["totalExpenses", "localCost", "regionalCost", "spendPerCapita", "avgSnowCm"];
+const TABLE_KEYS: MetricKey[] = [
+  "totalExpenses",
+  "localCost",
+  "regionalCost",
+  "spendPerCapita",
+  "operatingExpense",
+  "winterShareOfOperating",
+  "avgSnowCm",
+];
 
 interface ComparisonProps {
   records: MunicipalRecord[];
@@ -19,13 +35,18 @@ interface ComparisonProps {
   onChangeB: (id: string) => void;
 }
 
-export default function Comparison({ records, years, year, metric, selA, selB, onChangeA, onChangeB }: ComparisonProps) {
+export default function Comparison({ records: baseRecords, years, year, metric, selA, selB: selBProp, onChangeA, onChangeB }: ComparisonProps) {
+  const [vsAverage, setVsAverage] = useState(false);
+  // Municipal records plus one synthetic "GTHA average" record per year.
+  const records = useMemo(() => [...baseRecords, ...gthaAverageRecords(baseRecords)], [baseRecords]);
+  const selB = vsAverage ? GTHA_AVG_ID : selBProp;
+
   const municipalities = useMemo(
     () =>
-      [...new Map(records.map((r) => [r.munId, r.name])).entries()]
+      [...new Map(baseRecords.map((r) => [r.munId, r.name])).entries()]
         .map(([id, name]) => ({ id, name }))
         .sort((a, b) => a.name.localeCompare(b.name)),
-    [records],
+    [baseRecords],
   );
 
   const recA = records.find((r) => r.munId === selA && r.year === year);
@@ -33,18 +54,41 @@ export default function Comparison({ records, years, year, metric, selA, selB, o
 
   return (
     <section className="rounded-xl border border-line bg-panel p-4" aria-labelledby="compare-title">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 id="compare-title" className="text-base font-semibold">
-          Compare municipalities · {year}
+          {vsAverage ? "Compare to the GTHA average" : "Compare municipalities"} · {year}
         </h2>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Picker label="A" color={SERIES_A} value={selA} options={municipalities} onChange={onChangeA} />
           <span className="text-ink-3">vs</span>
-          <Picker label="B" color={SERIES_B} value={selB} options={municipalities} onChange={onChangeB} />
+          {vsAverage ? (
+            <span className="flex items-center gap-1.5">
+              <span
+                className="grid h-5 w-5 place-items-center rounded-full text-[11px] font-bold text-white"
+                style={{ background: SERIES_B }}
+                aria-hidden
+              >
+                B
+              </span>
+              <span className="rounded-md border border-line bg-surface px-2 py-1">GTHA average</span>
+            </span>
+          ) : (
+            <Picker label="B" color={SERIES_B} value={selB} options={municipalities} onChange={onChangeB} />
+          )}
+          <button
+            type="button"
+            onClick={() => setVsAverage((v) => !v)}
+            aria-pressed={vsAverage}
+            className={`rounded-md border px-2.5 py-1 font-medium ${
+              vsAverage ? "border-ink bg-ink text-panel" : "border-line bg-panel text-ink hover:bg-surface"
+            }`}
+          >
+            {vsAverage ? "Compare to a municipality" : "Compare to GTHA average"}
+          </button>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid gap-6">
         {/* Side-by-side table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -79,6 +123,13 @@ export default function Comparison({ records, years, year, metric, selA, selB, o
 
         {/* Trend of the active map metric */}
         <TrendChart records={records} years={years} year={year} metric={metric} selA={selA} selB={selB} />
+        {vsAverage && (
+          <p className="text-xs text-ink-2">
+            GTHA average: spending per resident is GTHA-wide (total winter spending ÷ total population of municipalities
+            reporting that year). The share of operating expenses is GTHA-wide too (total winter spending ÷ total
+            operating expenses). Dollar totals and snowfall are the average across reporting municipalities.
+          </p>
+        )}
       </div>
     </section>
   );

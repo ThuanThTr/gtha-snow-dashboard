@@ -6,3 +6,14 @@ next-env.d.ts
 .DS_Store
 .vercel
 .env*.local
+
+# Secrets: API keys (e.g. NEXT_PUBLIC_CARTO_API_KEY for the map basemap) live in .env.local, never in git.
+.env
+.env.*
+!.env.example
+
+# Editor and tool folders
+.vscode/
+.idea/
+.claude/
+*.log

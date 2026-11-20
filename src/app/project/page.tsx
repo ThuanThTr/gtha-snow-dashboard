@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import metricsJson from "@/data/municipal-metrics.json";
 import type { MetricsFile } from "@/lib/types";
 import { HEADLINE_YEAR } from "@/lib/insights";
 import StoryCards from "@/components/StoryCards";
+import { BODY, EYEBROW, HEADING, LIST, LEAD, PAGE, PAGE_HEADER, PAGE_TITLE } from "@/lib/typography";
+import SiteHeader from "@/components/SiteHeader";
 
 const data = metricsJson as MetricsFile;
 const EXAMPLE_ID = "21024"; // Caledon
@@ -47,9 +48,6 @@ const dollars = (value: number | null | undefined, digits = 0) =>
         minimumFractionDigits: digits,
       }).format(value);
 
-const HEADING = "border-t border-line pt-6 text-2xl font-semibold";
-const BODY = "text-base leading-relaxed text-ink-2";
-const LIST = "flex list-disc flex-col gap-2 pl-5 text-base leading-relaxed text-ink-2";
 
 function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -86,15 +84,14 @@ function Step({ label, value, strong }: { label: React.ReactNode; value: string;
 
 export default function ProjectPage() {
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-12 px-5 py-10 text-ink sm:py-14">
+    <>
+    <SiteHeader active="project" />
+    <main className={PAGE}>
       <div className="flex flex-col gap-6">
-        <Link href="/" className="w-fit text-sm text-ink-2 underline underline-offset-2">
-          ← Back to the dashboard
-        </Link>
-        <header className="border-t-2 border-ink pt-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">GTHA Winter Maintenance</p>
-          <h1 className="mt-2 text-4xl font-semibold leading-tight">Project description</h1>
-          <p className="mt-3 text-lg leading-relaxed text-ink-2">
+        <header className={PAGE_HEADER}>
+          <p className={EYEBROW}>GTHA Winter Maintenance</p>
+          <h1 className={PAGE_TITLE}>Project description</h1>
+          <p className={LEAD}>
             The dashboard shows what 26 GTHA municipalities spend on winter road maintenance, and how that spending
             compares. This page sums up what the numbers show, then explains where each figure comes from and how it is
             calculated.
@@ -339,12 +336,7 @@ export default function ProjectPage() {
           </li>
         </ol>
       </section>
-
-      <footer className="border-t border-line pt-6 text-sm text-ink-3">
-        <Link href="/" className="underline underline-offset-2">
-          Back to the dashboard
-        </Link>
-      </footer>
     </main>
+    </>
   );
 }

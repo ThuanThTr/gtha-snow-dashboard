@@ -34,6 +34,10 @@ export interface MunicipalRecord {
   spendPerCapita: number | null;
   /** Change in spending per resident since 2016, as a fraction (0.25 = +25%). Null for 2016 and earlier. */
   changeSince2016: number | null;
+  /** The municipality's total operating expenses across all services, $. Null = not reported that year. */
+  operatingExpense: number | null;
+  /** totalExpenses ÷ operatingExpense, 0 to 1: the share of the operating budget spent on winter control. */
+  winterShareOfOperating: number | null;
 }
 
 export interface MetricsFile {
