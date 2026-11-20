@@ -63,6 +63,21 @@ body {
   color: var(--color-ink);
 }
 
+/* Never let the page slide sideways on touch screens. */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* iOS Safari zooms in when a form control under 16px gets focus; keep them at 16px on phones. */
+@media (max-width: 639px) {
+  select,
+  input:not([type="range"]),
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* Year slider: snowflake thumb on a blue track. --fill is set from the component. */
 input[type="range"].year-slider {
   -webkit-appearance: none;

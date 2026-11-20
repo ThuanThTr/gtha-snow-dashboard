@@ -16,7 +16,7 @@ const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map(
   names: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))].sort(),
 }));
 
-const TAB_CLASS = "-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 pb-3 font-medium";
+const TAB_CLASS = "-mb-px whitespace-nowrap border-b-2 px-2 pb-3 pt-2 text-center font-medium sm:shrink-0 sm:px-3 sm:pt-0 sm:text-left";
 const tabColor = (active: boolean) =>
   active ? "border-ink text-ink" : "border-transparent text-ink-2 hover:text-ink";
 
@@ -72,9 +72,9 @@ export default function SiteHeader({
             . <span className="italic">First published November 2026.</span>
           </p>
         </div>
-        <nav aria-label="Sections" className="-mx-4 flex max-w-[calc(100%+2rem)] items-end gap-1 overflow-x-auto px-1 text-sm sm:mx-0 sm:max-w-full sm:px-0">
+        <nav aria-label="Sections" className="grid w-full grid-cols-2 text-sm sm:flex sm:w-auto sm:items-end sm:gap-1">
           {tab("dashboard", "Dashboard")}
-          <span className="group relative flex shrink-0 items-end">
+          <span className="group relative flex w-full items-end sm:w-auto sm:shrink-0">
             <label htmlFor="open-municipality" className="sr-only">
               Municipality profile
             </label>
@@ -85,7 +85,7 @@ export default function SiteHeader({
               onChange={(e) => {
                 if (e.target.value) router.push(`/municipality/${e.target.value}`);
               }}
-              className={`${TAB_CLASS} ${tabColor(profileActive)} cursor-pointer appearance-none bg-transparent pr-7 pl-3 focus-visible:outline-2`}
+              className={`${TAB_CLASS} ${tabColor(profileActive)} w-full cursor-pointer appearance-none bg-transparent pr-7 pl-3 [text-align-last:center] focus-visible:outline-2 sm:w-auto sm:[text-align-last:auto]`}
             >
               <option value="">Municipality profile</option>
               {MUNICIPALITY_GROUPS.map(({ region, names }) => (
