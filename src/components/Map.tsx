@@ -60,7 +60,8 @@ const CARTO_KEY = process.env.NEXT_PUBLIC_CARTO_API_KEY;
 const STYLE_URL = `https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json${
   CARTO_KEY ? `?key=${encodeURIComponent(CARTO_KEY)}` : ""
 }`;
-const FIT_PADDING = { top: PAD, right: PAD, left: PAD, bottom: PAD + LEGEND_H };
+/** Map padding that keeps the boundaries clear of the legend; the legend wraps taller on narrow maps. */
+const fitPadding = (w: number) => ({ top: PAD, right: PAD, left: PAD, bottom: PAD + (w < 480 ? LEGEND_H + 36 : LEGEND_H) });
 
 export default function GthaMap({
   geo,
@@ -112,7 +113,7 @@ export default function GthaMap({
       container: el,
       style: STYLE_URL,
       bounds,
-      fitBoundsOptions: { padding: FIT_PADDING },
+      fitBoundsOptions: { padding: fitPadding(el.clientWidth) },
       dragRotate: false,
       pitchWithRotate: false,
       attributionControl: { compact: true },
@@ -176,7 +177,7 @@ export default function GthaMap({
   // ---- zoom buttons ----
   const zoomIn = () => mapInstance?.zoomIn({ duration: 300 });
   const zoomOut = () => mapInstance?.zoomOut({ duration: 300 });
-  const resetZoom = () => mapInstance?.fitBounds(bounds, { padding: FIT_PADDING, duration: 300 });
+  const resetZoom = () => mapInstance?.fitBounds(bounds, { padding: fitPadding(size.w), duration: 300 });
 
   // ---- draw / update municipality shapes ----
   useEffect(() => {
@@ -338,8 +339,17 @@ export default function GthaMap({
   // ---- tooltip ----
   const hovered = hover ? recordsById.get(hover.munId) : undefined;
   const hoveredName = hover ? geo.features.find((f) => f.properties.munId === hover.munId)?.properties.name : "";
-  const tipLeft = hover ? (hover.x + 16 + TOOLTIP_W > size.w ? hover.x - 16 - TOOLTIP_W : hover.x + 16) : 0;
-  const tipTop = hover ? Math.max(8, Math.min(hover.y - 20, size.h - TOOLTIP_H)) : 0;
+  // Narrow maps (phones): shrink the tooltip to fit and pin it to the top edge, clear of the finger.
+  const tipW = Math.min(TOOLTIP_W, Math.max(0, size.w - 16));
+  const compact = size.w < 480;
+  const tipLeft = hover
+    ? compact
+      ? (size.w - tipW) / 2
+      : hover.x + 16 + tipW > size.w
+        ? hover.x - 16 - tipW
+        : hover.x + 16
+    : 0;
+  const tipTop = hover ? (compact ? 8 : Math.max(8, Math.min(hover.y - 20, size.h - TOOLTIP_H))) : 0;
 
   return (
     <div ref={wrapRef} className="absolute inset-0">
@@ -387,8 +397,8 @@ export default function GthaMap({
 
       {hover && (
         <div
-          className="pointer-events-none absolute z-10 rounded-lg border border-line bg-panel p-3 text-sm shadow-lg"
-          style={{ left: Math.max(8, tipLeft), top: tipTop, width: TOOLTIP_W }}
+          className="pointer-events-none absolute z-10 max-h-[calc(100%-1rem)] overflow-hidden rounded-lg border border-line bg-panel p-3 text-sm shadow-lg"
+          style={{ left: Math.max(8, tipLeft), top: tipTop, width: tipW }}
           role="tooltip"
         >
           <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -497,17 +507,17 @@ function Sparkline({ series, year }: { series: MunicipalRecord[]; year: number }
 
 function Legend({ title, items }: { title: string; items: LegendItem[] }) {
   return (
-    <div className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-md bg-panel/95 p-2 text-xs">
+    <div className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] rounded-md bg-panel/95 p-2 text-[11px] sm:bottom-3 sm:left-3 sm:max-w-[calc(100%-1.5rem)] sm:text-xs">
       <p className="mb-1 font-medium">{title}</p>
       {items.length > 0 ? (
         <div className="flex flex-wrap items-end gap-x-0.5 gap-y-2">
           {items.map(({ color, label }) => (
-            <div key={`${color}-${label}`} className="flex w-[72px] flex-col gap-1">
+            <div key={`${color}-${label}`} className="flex w-[48px] flex-col gap-1 sm:w-[72px]">
               <span className="h-3 rounded-sm" style={{ background: color }} />
               <span className="tabular-nums text-ink-2">{label}</span>
             </div>
           ))}
-          <div className="ml-2 flex w-[72px] flex-col gap-1">
+          <div className="ml-2 flex w-[56px] flex-col gap-1 sm:w-[72px]">
             <svg className="h-3 w-full rounded-sm" aria-hidden>
               <rect width="100%" height="100%" fill="url(#nodata-hatch)" />
             </svg>

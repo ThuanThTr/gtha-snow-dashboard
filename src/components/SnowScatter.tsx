@@ -69,7 +69,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
     });
 
   return (
-    <section aria-labelledby="scatter-title" className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-4">
+    <section aria-labelledby="scatter-title" className="flex flex-col gap-3 min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4">
       <div>
         <h2 id="scatter-title" className="text-base font-semibold">
           Snowfall and spending, {years[0]} to {years.at(-1)}

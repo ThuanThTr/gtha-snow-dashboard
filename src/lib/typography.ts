@@ -1,10 +1,10 @@
 /** Shared text styles for long-form pages (project description, overview), so they read as one document. */
-export const PAGE = "mx-auto flex max-w-3xl flex-col gap-12 px-5 py-10 text-ink sm:py-14";
+export const PAGE = "mx-auto flex max-w-3xl flex-col gap-12 px-4 py-8 text-ink sm:px-5 sm:py-14";
 export const PAGE_HEADER = "border-t-2 border-ink pt-6";
 export const EYEBROW = "text-xs font-medium uppercase tracking-wide text-ink-3";
-export const PAGE_TITLE = "mt-2 text-4xl font-semibold leading-tight";
-export const LEAD = "mt-3 text-lg leading-relaxed text-ink-2";
-export const HEADING = "border-t border-line pt-6 text-2xl font-semibold";
+export const PAGE_TITLE = "mt-2 text-3xl font-semibold leading-tight sm:text-4xl";
+export const LEAD = "mt-3 text-base leading-relaxed text-ink-2 sm:text-lg";
+export const HEADING = "border-t border-line pt-6 text-xl font-semibold sm:text-2xl";
 export const BODY = "text-base leading-relaxed text-ink-2";
 export const LIST = "flex list-disc flex-col gap-2 pl-5 text-base leading-relaxed text-ink-2";
 export const SUBHEADING = "text-lg font-semibold text-ink";

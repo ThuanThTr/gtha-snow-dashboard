@@ -16,7 +16,7 @@ const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map(
   names: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))].sort(),
 }));
 
-const TAB_CLASS = "-mb-px border-b-2 px-3 pb-3 font-medium";
+const TAB_CLASS = "-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 pb-3 font-medium";
 const tabColor = (active: boolean) =>
   active ? "border-ink text-ink" : "border-transparent text-ink-2 hover:text-ink";
 
@@ -54,13 +54,13 @@ export default function SiteHeader({
   const profileActive = active === "profile";
 
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-panel">
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 px-4 pt-3 lg:px-6">
-        <div className="pb-3">
-          <Link href="/" className="text-xl font-semibold leading-tight text-ink">
+    <header className="z-20 border-b border-line bg-panel md:sticky md:top-0">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1 px-4 pt-3 lg:px-6">
+        <div className="min-w-0 pb-2 sm:pb-3">
+          <Link href="/" className="text-lg font-semibold leading-tight text-ink sm:text-xl">
             Winter Maintenance Across Greater Toronto and Hamilton Area (GTHA)
           </Link>
-          <p className="mt-1 text-sm leading-snug text-ink-2">
+          <p className="mt-1 text-xs leading-snug text-ink-2 sm:text-sm">
             By{" "}
             <a href="https://www.thuantruong.com/" target="_blank" rel="noopener noreferrer" className="text-ink underline underline-offset-2">
               Thuan Truong
@@ -72,9 +72,9 @@ export default function SiteHeader({
             . <span className="italic">First published November 2026.</span>
           </p>
         </div>
-        <nav aria-label="Sections" className="flex items-end gap-1 text-sm">
+        <nav aria-label="Sections" className="-mx-4 flex max-w-[calc(100%+2rem)] items-end gap-1 overflow-x-auto px-1 text-sm sm:mx-0 sm:max-w-full sm:px-0">
           {tab("dashboard", "Dashboard")}
-          <span className="group relative flex items-end">
+          <span className="group relative flex shrink-0 items-end">
             <label htmlFor="open-municipality" className="sr-only">
               Municipality profile
             </label>

@@ -142,9 +142,9 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
     <>
     <SiteHeader active="profile" currentSlug={slug} />
     <main className="flex flex-col">
-      <section className="relative h-[380px] overflow-hidden border-b border-line bg-surface md:h-[440px]">
+      <section className="relative h-[300px] overflow-hidden border-b border-line bg-surface sm:h-[380px] md:h-[440px]">
         <HeroMap name={name} />
-        <div className="absolute bottom-5 left-5 right-5 max-w-sm border border-line bg-panel/90 p-5 backdrop-blur-sm sm:p-6">
+        <div className="absolute bottom-4 left-4 right-4 max-w-sm border border-line bg-panel/90 p-4 backdrop-blur-sm sm:bottom-5 sm:left-5 sm:right-5 sm:p-6">
           <p className={EYEBROW}>{region}</p>
           <h1 className={`${PAGE_TITLE} text-ink`}>{name}</h1>
           <p className={LEAD}>
@@ -153,7 +153,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
         </div>
       </section>
 
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-5 py-12">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-8 sm:gap-12 sm:px-5 sm:py-12">
         <section className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <h2 className={`${HEADING} text-ink`}>Level of Service</h2>
@@ -180,7 +180,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
 
         <section className="flex flex-col gap-6">
           <h2 className={`${HEADING} text-ink`}>Latest figures, {latest.year}</h2>
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-3 lg:grid-cols-5">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-5 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             <Stat label={METRIC_BY_KEY.spendPerCapita.label} value={formatMetric("spendPerCapita", latest.spendPerCapita)} />
             <Stat label={METRIC_BY_KEY.totalExpenses.label} value={formatMetric("totalExpenses", latest.totalExpenses)} />
             <Stat
@@ -195,7 +195,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
         <section className="flex flex-col gap-4">
           <h2 className={`${HEADING} text-ink`}>Where the money goes</h2>
           <div className="overflow-x-auto">
-            <table className={`${TABLE} min-w-[600px]`}>
+            <table className={`${TABLE} stack sm:min-w-[600px]`}>
               <thead>
                 <tr className={TABLE_HEAD_ROW}>
                   <th scope="col" className={TABLE_TH}>Year</th>
@@ -212,12 +212,12 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
                   return (
                     <tr key={r.year} className={TABLE_ROW}>
                       <th scope="row" className={TABLE_ROW_HEADER}>{r.year}</th>
-                      <td className={cell}>{missing ? "No data" : formatMetric("totalExpenses", r.roadsCost)}</td>
-                      <td className={cell}>{sidewalks(r)}</td>
-                      <td className={cell}>
+                      <td data-label="Roads" className={cell}>{missing ? "No data" : formatMetric("totalExpenses", r.roadsCost)}</td>
+                      <td data-label="Sidewalks and parking lots" className={cell}>{sidewalks(r)}</td>
+                      <td data-label="Regional roads share" className={cell}>
                         {missing ? "No data" : r.regionalCost === 0 ? "None" : formatMetric("regionalCost", r.regionalCost)}
                       </td>
-                      <td className={`${TABLE_CELL} text-right font-semibold ${missing ? TABLE_MISSING : "text-ink"}`}>
+                      <td data-label="Total" className={`${TABLE_CELL} text-right font-semibold ${missing ? TABLE_MISSING : "text-ink"}`}>
                         {formatMetric("totalExpenses", r.totalExpenses)}
                       </td>
                     </tr>
@@ -237,7 +237,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
         <section className="flex flex-col gap-4">
           <h2 className={`${HEADING} text-ink`}>Year by year</h2>
           <div className="overflow-x-auto">
-            <table className={`${TABLE} min-w-[560px]`}>
+            <table className={`${TABLE} stack sm:min-w-[560px]`}>
               <thead>
                 <tr className={TABLE_HEAD_ROW}>
                   <th scope="col" className={TABLE_TH}>Year</th>
@@ -256,12 +256,12 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
                   return (
                     <tr key={r.year} className={TABLE_ROW}>
                       <th scope="row" className={TABLE_ROW_HEADER}>{r.year}</th>
-                      <td className={cell}>{formatMetric("spendPerCapita", r.spendPerCapita)}</td>
-                      <td className={cell}>{formatMetric("totalExpenses", r.totalExpenses)}</td>
-                      <td className={cell}>{formatMetric("operatingExpense", r.operatingExpense)}</td>
-                      <td className={cell}>{formatMetric("winterShareOfOperating", r.winterShareOfOperating)}</td>
-                      <td className={cell}>{share(r)}</td>
-                      <td className={`${TABLE_CELL} text-right text-ink`}>{formatMetric("avgSnowCm", r.avgSnowCm)}</td>
+                      <td data-label="Per resident" className={cell}>{formatMetric("spendPerCapita", r.spendPerCapita)}</td>
+                      <td data-label="Total spending" className={cell}>{formatMetric("totalExpenses", r.totalExpenses)}</td>
+                      <td data-label="Operating expenses" className={cell}>{formatMetric("operatingExpense", r.operatingExpense)}</td>
+                      <td data-label="Share of operating" className={cell}>{formatMetric("winterShareOfOperating", r.winterShareOfOperating)}</td>
+                      <td data-label="Regional roads share" className={cell}>{share(r)}</td>
+                      <td data-label="Snowfall (estimated)" className={`${TABLE_CELL} text-right text-ink`}>{formatMetric("avgSnowCm", r.avgSnowCm)}</td>
                     </tr>
                   );
                 })}
@@ -288,7 +288,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1 border-t border-line pt-3">
       <dt className="text-sm text-ink-3">{label}</dt>
-      <dd className="text-2xl font-semibold tabular-nums text-ink">{value}</dd>
+      <dd className="break-words text-xl font-semibold tabular-nums text-ink sm:text-2xl">{value}</dd>
     </div>
   );
 }

@@ -7,7 +7,7 @@ export default function AreaComparison({ records, year }: { records: MunicipalRe
   const max = Math.max(...areas.map((a) => a.perResident ?? 0), 1);
 
   return (
-    <section aria-labelledby="area-title" className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-4">
+    <section aria-labelledby="area-title" className="flex flex-col gap-3 min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4">
       <div>
         <h2 id="area-title" className="text-base font-semibold">
           Spending per resident by area · {year}
@@ -16,7 +16,7 @@ export default function AreaComparison({ records, year }: { records: MunicipalRe
       </div>
       <ul className="flex flex-col gap-2">
         {areas.map((a) => (
-          <li key={a.area} className="grid grid-cols-[7.5rem_1fr_3.5rem] items-center gap-3 text-sm">
+          <li key={a.area} className="grid grid-cols-[6rem_1fr_3rem] items-center gap-2 text-sm sm:grid-cols-[7.5rem_1fr_3.5rem] sm:gap-3">
             <span className="text-ink">{areaLabel(a.area)}</span>
             {a.perResident != null ? (
               <>

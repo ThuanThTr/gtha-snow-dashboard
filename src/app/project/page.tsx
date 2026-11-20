@@ -77,7 +77,7 @@ function Step({ label, value, strong }: { label: React.ReactNode; value: string;
       <th scope="row" className={`py-3 pr-4 text-left ${strong ? "font-semibold text-ink" : "font-normal text-ink-2"}`}>
         {label}
       </th>
-      <td className={`py-3 text-right text-ink ${strong ? "font-semibold" : ""}`}>{value}</td>
+      <td className={`whitespace-nowrap py-3 text-right text-ink ${strong ? "font-semibold" : ""}`}>{value}</td>
     </tr>
   );
 }
@@ -206,7 +206,7 @@ export default function ProjectPage() {
           Every value below comes from the dataset behind the dashboard, so you can check the arithmetic against the map.
         </p>
         {example ? (
-          <table className="w-full border-collapse text-left text-base">
+          <table className="w-full border-collapse text-left text-sm sm:text-base">
             <thead>
               <tr className="border-b border-ink text-xs font-medium uppercase tracking-wide text-ink-3">
                 <th scope="col" className="py-2 pr-4 font-medium">Step</th>

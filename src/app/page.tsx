@@ -161,7 +161,7 @@ export default function Page() {
       ) : (
       <main
         id="panel-dashboard"
-        className="flex min-w-0 flex-1 flex-col gap-4 p-4 lg:p-6"
+        className="flex min-w-0 flex-1 flex-col gap-4 p-3 sm:p-4 lg:p-6"
       >
         {/* Map on the left, comparison on the right, so both are visible together */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
@@ -170,8 +170,8 @@ export default function Page() {
           <div>
             <h2 className="text-xl font-semibold">{METRIC_BY_KEY[metric].label}</h2>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5 text-sm">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            <div className="flex w-full items-center gap-2 rounded-md border border-line bg-panel px-3 py-1.5 text-sm sm:w-auto">
               <label htmlFor="year" className="font-medium">
                 Year
               </label>
@@ -184,7 +184,7 @@ export default function Page() {
                 step={1}
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
-                className="year-slider w-36"
+                className="year-slider w-auto min-w-0 flex-1 sm:w-36 sm:flex-none"
                 style={{ "--fill": `${((year - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100}%` } as React.CSSProperties}
               />
               <span className="text-xs text-ink-3 tabular-nums">{MAX_YEAR}</span>
@@ -199,7 +199,7 @@ export default function Page() {
               id="metric"
               value={metric}
               onChange={(e) => setMetric(e.target.value as MetricKey)}
-              className="rounded-md border border-line bg-panel px-3 py-1.5 text-sm"
+              className="w-full rounded-md border border-line bg-panel px-3 py-1.5 text-sm sm:w-auto"
             >
               {DROPDOWN_METRICS.map((key) => (
                 <option key={key} value={key}>
@@ -210,7 +210,7 @@ export default function Page() {
           </div>
         </div>
 
-        <section className="relative min-h-[420px] flex-1 overflow-hidden rounded-xl border border-line bg-panel lg:min-h-[520px]">
+        <section className="relative h-[70svh] max-h-[560px] min-h-[380px] overflow-hidden rounded-xl border border-line bg-panel lg:h-auto lg:max-h-none lg:min-h-[520px] lg:flex-1">
           {geo ? (
             <GthaMap
               geo={geo}
@@ -229,7 +229,7 @@ export default function Page() {
               {geoError ? "Could not load the boundary file." : "Loading map…"}
             </div>
           )}
-          <p className="pointer-events-none absolute top-3 left-3 rounded bg-panel/90 px-2 py-1 text-xs text-ink-2">
+          <p className="pointer-events-none absolute top-3 left-3 max-w-[calc(100%-4.5rem)] rounded bg-panel/90 px-2 py-1 text-xs text-ink-2">
             Click a municipality to set comparison <strong>{nextSlot}</strong>
           </p>
         </section>

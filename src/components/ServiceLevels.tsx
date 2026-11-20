@@ -115,7 +115,7 @@ function TriggerRuler({ rows }: { rows: { label: string; depth: number }[] }) {
       ) : (
         <div className="flex flex-col gap-2">
           {rows.map(({ label, depth }) => (
-            <div key={label} className="grid grid-cols-[minmax(0,13rem)_1fr_3.5rem] items-center gap-3 text-sm">
+            <div key={label} className="grid grid-cols-[minmax(0,7rem)_1fr_3.5rem] sm:grid-cols-[minmax(0,13rem)_1fr_3.5rem] items-center gap-3 text-sm">
               <span className="truncate text-ink">{label}</span>
               <span className="relative h-5">
                 <span className="absolute inset-x-0 top-1/2 h-px bg-line" />
@@ -134,7 +134,7 @@ function TriggerRuler({ rows }: { rows: { label: string; depth: number }[] }) {
               <span className="text-right tabular-nums text-ink">{depth} cm</span>
             </div>
           ))}
-          <div className="grid grid-cols-[minmax(0,13rem)_1fr_3.5rem] gap-3 text-xs text-ink-3">
+          <div className="grid grid-cols-[minmax(0,7rem)_1fr_3.5rem] sm:grid-cols-[minmax(0,13rem)_1fr_3.5rem] gap-3 text-xs text-ink-3">
             <span />
             <span className="relative h-4">
               {RULER_TICKS.map((t) => (
@@ -217,7 +217,7 @@ export function ServiceLevels({
       />
 
       <div className="overflow-x-auto">
-        <table className={`${TABLE} min-w-[640px]`}>
+        <table className={`${TABLE} stack sm:min-w-[640px]`}>
           <thead>
             <tr className={TABLE_HEAD_ROW}>
               <th scope="col" className={TABLE_TH}>Road type</th>
@@ -241,11 +241,11 @@ export function ServiceLevels({
                   </th>
                   {level ? (
                     <>
-                      <td className={`${TABLE_CELL} text-ink`}>{level.salting ?? NA}</td>
-                      <td className={`${TABLE_CELL} text-ink`}>{level.plowing ?? NA}</td>
-                      <td className={`${TABLE_CELL} text-ink`}>{level.completion ?? NA}</td>
-                      <td className={`${TABLE_CELL} text-ink`}>{level.surface ?? NA}</td>
-                      <td className={`${TABLE_CELL} text-ink`}>{level.mmsClass ?? NA}</td>
+                      <td data-label="Salting trigger" className={`${TABLE_CELL} text-ink`}>{level.salting ?? NA}</td>
+                      <td data-label="Plowing trigger" className={`${TABLE_CELL} text-ink`}>{level.plowing ?? NA}</td>
+                      <td data-label="Completion time" className={`${TABLE_CELL} text-ink`}>{level.completion ?? NA}</td>
+                      <td data-label="Target surface" className={`${TABLE_CELL} text-ink`}>{level.surface ?? NA}</td>
+                      <td data-label="MMS class" className={`${TABLE_CELL} text-ink`}>{level.mmsClass ?? NA}</td>
                     </>
                   ) : (
                     <td colSpan={5} className={`${TABLE_CELL} ${TABLE_MISSING}`}>

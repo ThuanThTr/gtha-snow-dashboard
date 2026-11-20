@@ -53,7 +53,7 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
   const recB = records.find((r) => r.munId === selB && r.year === year);
 
   return (
-    <section className="rounded-xl border border-line bg-panel p-4" aria-labelledby="compare-title">
+    <section className="min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4" aria-labelledby="compare-title">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 id="compare-title" className="text-base font-semibold">
           {vsAverage ? "Compare to the GTHA average" : "Compare municipalities"} · {year}
@@ -91,7 +91,7 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
       <div className="grid gap-6">
         {/* Side-by-side table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs text-ink-2">
                 <th className="py-2 pr-3 font-medium">Indicator</th>
@@ -108,10 +108,10 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
                 const diff = a != null && b != null && b !== 0 ? (a - b) / b : null;
                 return (
                   <tr key={key} className={`border-b border-line last:border-0 ${key === metric ? "bg-surface" : ""}`}>
-                    <td className="py-2 pr-3 text-ink-2">{m.label}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{formatMetric(key, a)}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{formatMetric(key, b)}</td>
-                    <td className="py-2 text-right text-ink-2 tabular-nums">
+                    <td className="py-2 pr-2 text-ink-2 sm:pr-3">{m.label}</td>
+                    <td className="whitespace-nowrap py-2 pr-2 text-right tabular-nums sm:pr-3">{formatMetric(key, a)}</td>
+                    <td className="whitespace-nowrap py-2 pr-2 text-right tabular-nums sm:pr-3">{formatMetric(key, b)}</td>
+                    <td className="whitespace-nowrap py-2 text-right text-ink-2 tabular-nums">
                       {diff == null ? "—" : `${diff > 0 ? "+" : ""}${d3.format(".0%")(diff)}`}
                     </td>
                   </tr>
@@ -161,7 +161,7 @@ function Picker({
       <select
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-line bg-panel px-2 py-1"
+        className="max-w-[11rem] rounded-md border border-line bg-panel px-2 py-1 sm:max-w-none"
       >
         {options.map((o) => (
           <option key={o.id} value={o.id}>
