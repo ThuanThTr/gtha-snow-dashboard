@@ -113,13 +113,13 @@ input[type="range"].year-slider::-webkit-slider-thumb {
   height: 28px;
   margin-top: -12px;
   border: 0;
-  background: url("/icons/snowy.png") center / contain no-repeat;
+  background: url("/icons/snowflake.png") center / contain no-repeat;
 }
 input[type="range"].year-slider::-moz-range-thumb {
   width: 28px;
   height: 28px;
   border: 0;
-  background: url("/icons/snowy.png") center / contain no-repeat;
+  background: url("/icons/snowflake.png") center / contain no-repeat;
 }
 
 /*

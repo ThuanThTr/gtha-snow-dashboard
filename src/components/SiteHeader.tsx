@@ -16,7 +16,7 @@ const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map(
   names: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))].sort(),
 }));
 
-const TAB_CLASS = "-mb-px whitespace-nowrap border-b-2 px-2 pb-3 pt-2 text-center font-medium sm:shrink-0 sm:px-3 sm:pt-0 sm:text-left";
+const TAB_CLASS = "-mb-px cursor-pointer whitespace-nowrap border-b-2 px-2 pb-3 pt-2 text-center font-medium sm:shrink-0 sm:px-3 sm:pt-0";
 const tabColor = (active: boolean) =>
   active ? "border-ink text-ink" : "border-transparent text-ink-2 hover:text-ink";
 
@@ -55,7 +55,7 @@ export default function SiteHeader({
 
   return (
     <header className="z-20 border-b border-line bg-panel md:sticky md:top-0">
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1 px-4 pt-3 lg:px-6">
+      <div className="flex flex-col gap-y-1 px-4 pt-3 lg:px-6">
         <div className="min-w-0 pb-2 sm:pb-3">
           <Link href="/" className="text-lg font-semibold leading-tight text-ink sm:text-xl">
             Winter Maintenance Across Greater Toronto and Hamilton Area (GTHA)
@@ -72,9 +72,9 @@ export default function SiteHeader({
             . <span className="italic">First published November 2026.</span>
           </p>
         </div>
-        <nav aria-label="Sections" className="grid w-full grid-cols-2 text-sm sm:flex sm:w-auto sm:items-end sm:gap-1">
+        <nav aria-label="Sections" className="grid w-full grid-cols-2 text-sm sm:w-auto sm:grid-cols-4 sm:items-end sm:gap-1 sm:self-center">
           {tab("dashboard", "Dashboard")}
-          <span className="group relative flex w-full items-end sm:w-auto sm:shrink-0">
+          <span className="group relative flex w-full items-end">
             <label htmlFor="open-municipality" className="sr-only">
               Municipality profile
             </label>
@@ -85,7 +85,7 @@ export default function SiteHeader({
               onChange={(e) => {
                 if (e.target.value) router.push(`/municipality/${e.target.value}`);
               }}
-              className={`${TAB_CLASS} ${tabColor(profileActive)} w-full cursor-pointer appearance-none bg-transparent pr-7 pl-3 [text-align-last:center] focus-visible:outline-2 sm:w-auto sm:[text-align-last:auto]`}
+              className={`${TAB_CLASS} ${tabColor(profileActive)} w-full cursor-pointer appearance-none bg-transparent px-7 [text-align-last:center] focus-visible:outline-2`}
             >
               <option value="">Municipality profile</option>
               {MUNICIPALITY_GROUPS.map(({ region, names }) => (

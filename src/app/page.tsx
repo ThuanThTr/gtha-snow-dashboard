@@ -10,8 +10,6 @@ import GthaMap, { type LegendItem, type MunFeatureProps } from "@/components/Map
 import Comparison from "@/components/Comparison";
 import AreaComparison from "@/components/AreaComparison";
 import SnowScatter from "@/components/SnowScatter";
-import Link from "next/link";
-import { slugify } from "@/lib/slug";
 import metricsJson from "@/data/municipal-metrics.json";
 import {
   CHANGE_LABELS,
@@ -104,7 +102,6 @@ export default function Page() {
 
   const recordsById = byYear.get(year) ?? new Map();
   const recordsList = [...recordsById.values()];
-  const withData = recordsList.filter((r) => r[metric] != null).length;
   const def = METRIC_BY_KEY[metric];
 
   // Colour scale. Change since 2016 uses fixed bands (blue = fell, rust = grew).
@@ -233,24 +230,6 @@ export default function Page() {
             Click a municipality to set comparison <strong>{nextSlot}</strong>
           </p>
         </section>
-        <p className="-mt-2 text-xs text-ink-2">
-          Figure: {def.label}, {year}. {withData} of {recordsList.length} municipalities have data for this year.
-        </p>
-        <div className="-mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          {[selA, selB].map((id, i) => {
-            const rec = data.records.find((r) => r.munId === id);
-            if (!rec) return null;
-            return (
-              <Link
-                key={`${i}-${rec.munId}`}
-                href={`/municipality/${slugify(rec.name)}`}
-                className="text-ink underline underline-offset-2"
-              >
-                Open {rec.name} profile →
-              </Link>
-            );
-          })}
-        </div>
         </div>
 
         <Comparison

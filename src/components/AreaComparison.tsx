@@ -10,9 +10,8 @@ export default function AreaComparison({ records, year }: { records: MunicipalRe
     <section aria-labelledby="area-title" className="flex flex-col gap-3 min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4">
       <div>
         <h2 id="area-title" className="text-base font-semibold">
-          Spending per resident by area · {year}
+          Spending per resident by area in {year}
         </h2>
-        <p className="text-xs text-ink-2">How does my area compare?</p>
       </div>
       <ul className="flex flex-col gap-2">
         {areas.map((a) => (
@@ -41,9 +40,6 @@ export default function AreaComparison({ records, year }: { records: MunicipalRe
           .
         </p>
       )}
-      <p className="text-xs text-ink-2">
-        Toronto and Hamilton are single-tier cities, so each gets its own row.
-      </p>
     </section>
   );
 }

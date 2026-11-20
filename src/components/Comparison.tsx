@@ -12,6 +12,7 @@ import {
   gthaAverageRecords,
   type MetricKey,
 } from "@/lib/metrics";
+import { TABLE, TABLE_CELL, TABLE_HEAD_ROW, TABLE_MISSING, TABLE_ROW, TABLE_ROW_HEADER, TABLE_TH } from "@/lib/typography";
 
 /** Rows of the side-by-side table, in display order. */
 const TABLE_KEYS: MetricKey[] = [
@@ -51,6 +52,8 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
 
   const recA = records.find((r) => r.munId === selA && r.year === year);
   const recB = records.find((r) => r.munId === selB && r.year === year);
+  const nameA = recA?.name ?? "A";
+  const nameB = recB?.name ?? "B";
 
   return (
     <section className="min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4" aria-labelledby="compare-title">
@@ -91,27 +94,29 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
       <div className="grid gap-6">
         {/* Side-by-side table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-xs sm:text-sm">
+          <table className={`${TABLE} stack`}>
             <thead>
-              <tr className="border-b border-line text-left text-xs text-ink-2">
-                <th className="py-2 pr-3 font-medium">Indicator</th>
-                <th className="py-2 pr-3 text-right font-medium">{recA?.name ?? "A"}</th>
-                <th className="py-2 pr-3 text-right font-medium">{recB?.name ?? "B"}</th>
-                <th className="py-2 text-right font-medium">A vs B</th>
+              <tr className={TABLE_HEAD_ROW}>
+                <th scope="col" className={TABLE_TH}>Indicator</th>
+                <th scope="col" className={`${TABLE_TH} text-right`}>{nameA}</th>
+                <th scope="col" className={`${TABLE_TH} text-right`}>{nameB}</th>
+                <th scope="col" className={`${TABLE_TH} text-right`}>A vs B</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="tabular-nums">
               {TABLE_KEYS.map((key) => {
                 const m = METRIC_BY_KEY[key];
                 const a = recA?.[key] ?? null;
                 const b = recB?.[key] ?? null;
                 const diff = a != null && b != null && b !== 0 ? (a - b) / b : null;
+                const value = (v: number | null) =>
+                  `${TABLE_CELL} whitespace-nowrap text-right ${v == null ? TABLE_MISSING : "text-ink"}`;
                 return (
-                  <tr key={key} className={`border-b border-line last:border-0 ${key === metric ? "bg-surface" : ""}`}>
-                    <td className="py-2 pr-2 text-ink-2 sm:pr-3">{m.label}</td>
-                    <td className="whitespace-nowrap py-2 pr-2 text-right tabular-nums sm:pr-3">{formatMetric(key, a)}</td>
-                    <td className="whitespace-nowrap py-2 pr-2 text-right tabular-nums sm:pr-3">{formatMetric(key, b)}</td>
-                    <td className="whitespace-nowrap py-2 text-right text-ink-2 tabular-nums">
+                  <tr key={key} className={`${TABLE_ROW} ${key === metric ? "bg-surface" : ""}`}>
+                    <th scope="row" className={TABLE_ROW_HEADER}>{m.label}</th>
+                    <td data-label={nameA} className={value(a)}>{formatMetric(key, a)}</td>
+                    <td data-label={nameB} className={value(b)}>{formatMetric(key, b)}</td>
+                    <td data-label="A vs B" className={`${TABLE_CELL} whitespace-nowrap text-right text-ink-2`}>
                       {diff == null ? "—" : `${diff > 0 ? "+" : ""}${d3.format(".0%")(diff)}`}
                     </td>
                   </tr>
