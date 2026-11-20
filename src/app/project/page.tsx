@@ -3,8 +3,9 @@ import metricsJson from "@/data/municipal-metrics.json";
 import type { MetricsFile } from "@/lib/types";
 import { HEADLINE_YEAR } from "@/lib/insights";
 import StoryCards from "@/components/StoryCards";
-import { BODY, EYEBROW, HEADING, LIST, LEAD, PAGE, PAGE_HEADER, PAGE_TITLE } from "@/lib/typography";
+import { BODY, EYEBROW, HEADING, JUSTIFY, LIST, LEAD, PAGE, PAGE_HEADER, PAGE_TITLE } from "@/lib/typography";
 import SiteHeader from "@/components/SiteHeader";
+import PageContents, { type ContentsGroup } from "@/components/PageContents";
 
 const data = metricsJson as MetricsFile;
 const EXAMPLE_ID = "21024"; // Caledon
@@ -25,8 +26,38 @@ const NOT_REPORTED = (() => {
 })();
 const NOT_REPORTED_COUNT = data.records.filter((r) => r.totalExpenses == null).length;
 
+/** Section wrapper; the scroll margin keeps headings clear of the sticky site header when jumped to. */
+const SECTION = "flex scroll-mt-40 flex-col gap-4";
+
+/** Left-hand contents list. Ids match the sections below. */
+const CONTENTS: ContentsGroup[] = [
+  {
+    items: [
+      { id: "why-it-matters", label: "Why winter maintenance matters" },
+      { id: "what-the-numbers-show", label: "What the numbers show" },
+    ],
+  },
+  {
+    title: "How we built the dashboard",
+    items: [
+      { id: "study-area", label: "1. Study area" },
+      { id: "spending", label: "2. Winter maintenance spending" },
+      { id: "population-and-snowfall", label: "3. Population and snowfall" },
+      { id: "levels-of-service", label: "4. Levels of service" },
+      { id: "calculating-the-measures", label: "5. Calculating the measures" },
+      { id: "worked-example", label: "Worked example" },
+    ],
+  },
+  {
+    items: [
+      { id: "limitations", label: "Limitations" },
+      { id: "data-sources", label: "Data sources" },
+    ],
+  },
+];
+
 const TITLE = "Project Description | GTHA Winter Maintenance Dashboard";
-const DESCRIPTION = `What GTHA winter maintenance spending shows, and how the figures are built: key findings, study area, data sources, formulas, a worked example for ${example?.name ?? "one municipality"} in ${HEADLINE_YEAR}, and known limitations.`;
+const DESCRIPTION = `Why GTHA winter maintenance spending matters, what the numbers show, and how the figures are built: key findings, study area, data sources, formulas, a worked example for ${example?.name ?? "one municipality"} in ${HEADLINE_YEAR}, and known limitations.`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -86,27 +117,52 @@ export default function ProjectPage() {
   return (
     <>
     <SiteHeader active="project" />
-    <main className={PAGE}>
-      <div className="flex flex-col gap-6">
-        <header className={PAGE_HEADER}>
-          <p className={EYEBROW}>GTHA Winter Maintenance</p>
-          <h1 className={PAGE_TITLE}>Project description</h1>
-          <p className={LEAD}>
-            The dashboard shows what 26 GTHA municipalities spend on winter road maintenance, and how that spending
-            compares. This page sums up what the numbers show, then explains where each figure comes from and how it is
-            calculated.
-          </p>
-        </header>
-      </div>
+    <div className="lg:mx-auto lg:grid lg:max-w-6xl lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8 lg:px-6">
+    <PageContents groups={CONTENTS} />
+    <main className={`${PAGE} lg:mx-0`}>
+      <header className={PAGE_HEADER}>
+        <p className={EYEBROW}>GTHA Winter Maintenance</p>
+        <h1 className={PAGE_TITLE}>Project overview</h1>
+        <p className={`${LEAD} ${JUSTIFY}`}>
+          Canadian winters are long, cold and unpredictable. Every year, municipalities spend millions of dollars keeping
+          roads safe and accessible through snowstorms, freezing rain and icy conditions. This page explains why that
+          spending matters and what the numbers show, then where each figure comes from and how it is calculated.
+        </p>
+      </header>
 
-      <section className="flex flex-col gap-4">
+      <section id="why-it-matters" className={SECTION}>
+        <h2 className={HEADING}>Why winter maintenance matters</h2>
+        <p className={`${BODY} ${JUSTIFY}`}>
+          Winter maintenance is also one of the most visible municipal services. Whether roads are cleared in time for
+          the morning commute, how quickly neighbourhood streets are plowed, or how much taxpayers pay for these
+          services, winter operations affect people’s daily lives and often attract significant public attention.
+        </p>
+        <p className={`${BODY} ${JUSTIFY}`}>
+          But how much do municipalities actually spend on winter maintenance? And how does that spending compare when
+          we consider the size of their road networks, their populations and the snowfall they receive?
+        </p>
+        <aside className="bg-ink p-5 text-justify hyphens-auto text-lg font-semibold leading-snug text-white">
+          This interactive dashboard explores winter road maintenance spending across 26 municipalities in the Greater
+          Toronto and Hamilton Area (GTHA), using publicly available financial, geographic and demographic data.
+        </aside>
+        <p className={`${BODY} ${JUSTIFY}`}>
+          Our goal is to bring together information that is often scattered across different sources and make it easier
+          to explore, understand and compare.
+        </p>
+        <p className={`${BODY} ${JUSTIFY}`}>
+          Rather than simply ranking municipalities by spending, the dashboard provides context for understanding why
+          winter maintenance costs may differ across the region.
+        </p>
+      </section>
+
+      <section id="what-the-numbers-show" className={SECTION}>
         <h2 className={HEADING}>What the numbers show</h2>
         <StoryCards records={data.records} />
       </section>
 
       <p className="-mb-6 text-xs font-medium uppercase tracking-wide text-ink-3">How we built the dashboard</p>
 
-      <section className="flex flex-col gap-4">
+      <section id="study-area" className={SECTION}>
         <h2 className={HEADING}>1. Study area</h2>
         <p className={BODY}>
           The dashboard covers 26 local municipalities in the Greater Toronto and Hamilton Area (GTHA): Toronto,
@@ -115,7 +171,7 @@ export default function ProjectPage() {
         </p>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="spending" className={SECTION}>
         <h2 className={HEADING}>2. Winter maintenance spending</h2>
         <p className={BODY}>
           Spending comes from Ontario’s provincial financial reports (the Financial Information Return), the standard
@@ -144,7 +200,7 @@ export default function ProjectPage() {
         </p>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="population-and-snowfall" className={SECTION}>
         <h2 className={HEADING}>3. Population and snowfall</h2>
         <ul className={LIST}>
           <li>
@@ -162,7 +218,7 @@ export default function ProjectPage() {
         </p>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="levels-of-service" className={SECTION}>
         <h2 className={HEADING}>4. Levels of service</h2>
         <p className={BODY}>
           Spending depends on what each municipality is responsible for and the standards it sets. We reviewed the
@@ -182,7 +238,7 @@ export default function ProjectPage() {
         </p>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="calculating-the-measures" className={SECTION}>
         <h2 className={HEADING}>5. Calculating the measures</h2>
         <p className={BODY}>
           We combined the spending, population and snowfall data by municipality and year, then calculated these measures.
@@ -200,7 +256,7 @@ export default function ProjectPage() {
         </p>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="worked-example" className={SECTION}>
         <h2 className={HEADING}>Worked example: {example?.name ?? "Caledon"}, {HEADLINE_YEAR}</h2>
         <p className={BODY}>
           Every value below comes from the dataset behind the dashboard, so you can check the arithmetic against the map.
@@ -230,7 +286,7 @@ export default function ProjectPage() {
         )}
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="limitations" className={SECTION}>
         <h2 className={HEADING}>Limitations</h2>
         <p className={BODY}>
           This dashboard is intended as an exploratory and benchmarking resource, not a definitive ranking of municipal
@@ -286,7 +342,7 @@ export default function ProjectPage() {
         </p>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section id="data-sources" className={SECTION}>
         <h2 className={HEADING}>Data sources</h2>
         <p className={BODY}>The dashboard was developed using the following publicly available data sources.</p>
         <ol className="flex flex-col divide-y divide-line text-base leading-relaxed text-ink-2">
@@ -337,6 +393,7 @@ export default function ProjectPage() {
         </ol>
       </section>
     </main>
+    </div>
     </>
   );
 }

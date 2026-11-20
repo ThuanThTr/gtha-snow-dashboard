@@ -434,7 +434,7 @@ export default function GthaMap({
             </div>
           ) : (
             <p className="text-ink-2">
-              Not reported for {year}. A missing year does not mean nothing was spent.
+              No report for {year}.
             </p>
           )}
           <Sparkline series={seriesById.get(hover.munId) ?? []} year={year} />
@@ -462,10 +462,6 @@ function ShareBar({ record }: { record: MunicipalRecord }) {
         <span className="flex items-center gap-1">
           <span className="h-2 w-2 rounded-sm" style={{ background: "#2f4d6a" }} />
           Own roads and sidewalks {pct(1 - share)}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm" style={{ background: "#88aecf" }} />
-          Regional roads share {pct(share)}
         </span>
       </div>
     </div>

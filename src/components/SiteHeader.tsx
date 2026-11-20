@@ -6,56 +6,29 @@ import metricsJson from "@/data/municipal-metrics.json";
 import type { MetricsFile } from "@/lib/types";
 import { slugify } from "@/lib/slug";
 
-export type SiteSection = "dashboard" | "overview" | "profile" | "project";
+export type SiteSection = "dashboard" | "profile" | "project";
 
 const data = metricsJson as MetricsFile;
 
-/** Municipality names grouped by region, for the "Municipality profile" picker. */
+/** Municipality names grouped by region, for the "Level of service" picker. */
 const MUNICIPALITY_GROUPS = [...new Set(data.records.map((r) => r.region))].map((region) => ({
   region,
   names: [...new Set(data.records.filter((r) => r.region === region).map((r) => r.name))].sort(),
 }));
 
-const TAB_CLASS = "-mb-px whitespace-nowrap border-b-2 px-2 pb-3 pt-2 text-center font-medium sm:shrink-0 sm:px-3 sm:pt-0 sm:text-left";
+const TAB_CLASS = "-mb-px uppercase tracking-wide cursor-pointer whitespace-nowrap border-b-2 px-2 pb-3 pt-2 text-center font-medium sm:shrink-0 sm:px-3 sm:pt-0";
 const tabColor = (active: boolean) =>
   active ? "border-ink text-ink" : "border-transparent text-ink-2 hover:text-ink";
 
-/**
- * Site title and navigation, shared by the dashboard and the municipality profile pages.
- * On the dashboard, pass `onTab` so Dashboard / Overview switch in place; elsewhere they link back to "/".
- */
-export default function SiteHeader({
-  active,
-  onTab,
-  currentSlug,
-}: {
-  active: SiteSection;
-  onTab?: (tab: "dashboard" | "overview") => void;
-  currentSlug?: string;
-}) {
+/** Site title and navigation, shared by the dashboard, the municipality profile pages and the project description. */
+export default function SiteHeader({ active, currentSlug }: { active: SiteSection; currentSlug?: string }) {
   const router = useRouter();
-
-  function tab(key: "dashboard" | "overview", label: string) {
-    const className = `${TAB_CLASS} ${tabColor(active === key)}`;
-    if (onTab) {
-      return (
-        <button key={key} aria-pressed={active === key} onClick={() => onTab(key)} className={className}>
-          {label}
-        </button>
-      );
-    }
-    return (
-      <Link key={key} href={key === "dashboard" ? "/" : "/?tab=overview"} className={className}>
-        {label}
-      </Link>
-    );
-  }
 
   const profileActive = active === "profile";
 
   return (
     <header className="z-20 border-b border-line bg-panel md:sticky md:top-0">
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1 px-4 pt-3 lg:px-6">
+      <div className="flex flex-col gap-y-1 px-4 pt-3 lg:px-6">
         <div className="min-w-0 pb-2 sm:pb-3">
           <Link href="/" className="text-lg font-semibold leading-tight text-ink sm:text-xl">
             Winter Maintenance Across Greater Toronto and Hamilton Area (GTHA)
@@ -72,11 +45,17 @@ export default function SiteHeader({
             . <span className="italic">First published November 2026.</span>
           </p>
         </div>
-        <nav aria-label="Sections" className="grid w-full grid-cols-2 text-sm sm:flex sm:w-auto sm:items-end sm:gap-1">
-          {tab("dashboard", "Dashboard")}
-          <span className="group relative flex w-full items-end sm:w-auto sm:shrink-0">
+        <nav aria-label="Sections" className="grid w-full grid-cols-2 text-sm sm:w-auto sm:grid-cols-3 sm:items-end sm:gap-1 sm:self-center">
+          <Link
+            href="/"
+            aria-current={active === "dashboard" ? "page" : undefined}
+            className={`${TAB_CLASS} ${tabColor(active === "dashboard")}`}
+          >
+            Dashboard
+          </Link>
+          <span className="group relative flex w-full items-end">
             <label htmlFor="open-municipality" className="sr-only">
-              Municipality profile
+              Level of service
             </label>
             <select
               id="open-municipality"
@@ -85,9 +64,9 @@ export default function SiteHeader({
               onChange={(e) => {
                 if (e.target.value) router.push(`/municipality/${e.target.value}`);
               }}
-              className={`${TAB_CLASS} ${tabColor(profileActive)} w-full cursor-pointer appearance-none bg-transparent pr-7 pl-3 [text-align-last:center] focus-visible:outline-2 sm:w-auto sm:[text-align-last:auto]`}
+              className={`${TAB_CLASS} ${tabColor(profileActive)} w-full cursor-pointer appearance-none bg-transparent px-7 [text-align-last:center] focus-visible:outline-2`}
             >
-              <option value="">Municipality profile</option>
+              <option value="">Level of service</option>
               {MUNICIPALITY_GROUPS.map(({ region, names }) => (
                 <optgroup key={region} label={region}>
                   {names.map((name) => (
@@ -115,13 +94,12 @@ export default function SiteHeader({
               />
             </svg>
           </span>
-          {tab("overview", "Overview")}
           <Link
             href="/project"
             aria-current={active === "project" ? "page" : undefined}
-            className={`${TAB_CLASS} ${tabColor(active === "project")}`}
+            className={`${TAB_CLASS} ${tabColor(active === "project")} col-span-2 sm:col-span-1`}
           >
-            Project description
+            Project overview
           </Link>
         </nav>
       </div>

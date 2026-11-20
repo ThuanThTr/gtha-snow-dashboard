@@ -45,6 +45,11 @@ h3 {
   outline-offset: 2px;
 }
 
+/* Smooth jumps to in-page links (e.g. the project page contents); turned off below for reduced motion. */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Honour reduced-motion: signature motion collapses to a static state. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -113,13 +118,13 @@ input[type="range"].year-slider::-webkit-slider-thumb {
   height: 28px;
   margin-top: -12px;
   border: 0;
-  background: url("/icons/snowy.png") center / contain no-repeat;
+  background: url("/icons/snowflake.png") center / contain no-repeat;
 }
 input[type="range"].year-slider::-moz-range-thumb {
   width: 28px;
   height: 28px;
   border: 0;
-  background: url("/icons/snowy.png") center / contain no-repeat;
+  background: url("/icons/snowflake.png") center / contain no-repeat;
 }
 
 /*

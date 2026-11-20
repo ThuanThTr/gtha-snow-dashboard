@@ -52,7 +52,8 @@ const structuredData = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-CA" className={`${sourceSerif.variable} ${sourceSans.variable}`}>
-      <body className="font-sans antialiased">
+      {/* Browser extensions (e.g. Grammarly) add attributes to <body> before hydration; ignore those mismatches. */}
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

@@ -12,16 +12,56 @@ import {
   gthaAverageRecords,
   type MetricKey,
 } from "@/lib/metrics";
+import { TABLE, TABLE_CELL, TABLE_HEAD_ROW, TABLE_MISSING, TABLE_ROW, TABLE_ROW_HEADER, TABLE_TH } from "@/lib/typography";
+
+type NumericField = {
+  [K in keyof MunicipalRecord]: MunicipalRecord[K] extends number | null ? K : never;
+}[keyof MunicipalRecord];
+
+interface TableRow {
+  field: NumericField;
+  label: string;
+  /** Metric whose formatter is used for the value. */
+  format: MetricKey;
+  /** Map metric(s) that highlight this row. */
+  highlight: MetricKey[];
+  /** A component of total winter spending, shown indented under it. */
+  part?: boolean;
+  /** Text shown for a reported zero (e.g. sidewalks folded into roads). */
+  zeroText?: string;
+  /** Financial Information Return line, shown in an info popover. */
+  info?: { code: string; text: string };
+}
 
 /** Rows of the side-by-side table, in display order. */
-const TABLE_KEYS: MetricKey[] = [
-  "totalExpenses",
-  "localCost",
-  "regionalCost",
-  "spendPerCapita",
-  "operatingExpense",
-  "winterShareOfOperating",
-  "avgSnowCm",
+const TABLE_ROWS: TableRow[] = [
+  { field: "totalExpenses", label: "Total winter spending", format: "totalExpenses", highlight: ["totalExpenses"] },
+  {
+    field: "roadsCost",
+    label: "Roads only",
+    format: "totalExpenses",
+    highlight: ["localCost"],
+    part: true,
+    info: { code: "0621", text: "Winter Control - Except Sidewalks, Parking Lots" },
+  },
+  {
+    field: "sidewalksCost",
+    label: "Sidewalks and parking lots only",
+    format: "totalExpenses",
+    highlight: ["localCost"],
+    part: true,
+    zeroText: "n/a",
+    info: { code: "0622", text: "Winter Control - Sidewalks, Parking Lots Only" },
+  },
+  { field: "spendPerCapita", label: METRIC_BY_KEY.spendPerCapita.label, format: "spendPerCapita", highlight: ["spendPerCapita", "changeSince2016"] },
+  { field: "operatingExpense", label: METRIC_BY_KEY.operatingExpense.label, format: "operatingExpense", highlight: ["operatingExpense"] },
+  {
+    field: "winterShareOfOperating",
+    label: METRIC_BY_KEY.winterShareOfOperating.label,
+    format: "winterShareOfOperating",
+    highlight: ["winterShareOfOperating"],
+  },
+  { field: "avgSnowCm", label: METRIC_BY_KEY.avgSnowCm.label, format: "avgSnowCm", highlight: ["avgSnowCm"] },
 ];
 
 interface ComparisonProps {
@@ -51,6 +91,8 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
 
   const recA = records.find((r) => r.munId === selA && r.year === year);
   const recB = records.find((r) => r.munId === selB && r.year === year);
+  const nameA = recA?.name ?? "A";
+  const nameB = recB?.name ?? "B";
 
   return (
     <section className="min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4" aria-labelledby="compare-title">
@@ -91,27 +133,40 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
       <div className="grid gap-6">
         {/* Side-by-side table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-xs sm:text-sm">
+          <table className={`${TABLE} stack`}>
             <thead>
-              <tr className="border-b border-line text-left text-xs text-ink-2">
-                <th className="py-2 pr-3 font-medium">Indicator</th>
-                <th className="py-2 pr-3 text-right font-medium">{recA?.name ?? "A"}</th>
-                <th className="py-2 pr-3 text-right font-medium">{recB?.name ?? "B"}</th>
-                <th className="py-2 text-right font-medium">A vs B</th>
+              <tr className={TABLE_HEAD_ROW}>
+                <th scope="col" className={TABLE_TH}>Indicator</th>
+                <th scope="col" className={`${TABLE_TH} text-right`}>{nameA}</th>
+                <th scope="col" className={`${TABLE_TH} text-right`}>{nameB}</th>
+                <th scope="col" className={`${TABLE_TH} text-right`}>A vs B</th>
               </tr>
             </thead>
-            <tbody>
-              {TABLE_KEYS.map((key) => {
-                const m = METRIC_BY_KEY[key];
-                const a = recA?.[key] ?? null;
-                const b = recB?.[key] ?? null;
-                const diff = a != null && b != null && b !== 0 ? (a - b) / b : null;
+            <tbody className="tabular-nums">
+              {TABLE_ROWS.map((row) => {
+                // A component is only meaningful when that year's total was reported.
+                const pick = (rec: MunicipalRecord | undefined) =>
+                  rec && (!row.part || rec.totalExpenses != null) ? (rec[row.field] ?? null) : null;
+                const a = pick(recA);
+                const b = pick(recB);
+                // Skip the comparison when a component is a reported zero: "−100%" would mislead.
+                const diff =
+                  a != null && b != null && b !== 0 && !(row.zeroText && a === 0) ? (a - b) / b : null;
+                const text = (v: number | null) => (v === 0 && row.zeroText ? row.zeroText : formatMetric(row.format, v));
+                const value = (v: number | null) =>
+                  `${TABLE_CELL} whitespace-nowrap text-right ${v == null ? TABLE_MISSING : row.part ? "text-ink-2" : "text-ink"}`;
                 return (
-                  <tr key={key} className={`border-b border-line last:border-0 ${key === metric ? "bg-surface" : ""}`}>
-                    <td className="py-2 pr-2 text-ink-2 sm:pr-3">{m.label}</td>
-                    <td className="whitespace-nowrap py-2 pr-2 text-right tabular-nums sm:pr-3">{formatMetric(key, a)}</td>
-                    <td className="whitespace-nowrap py-2 pr-2 text-right tabular-nums sm:pr-3">{formatMetric(key, b)}</td>
-                    <td className="whitespace-nowrap py-2 text-right text-ink-2 tabular-nums">
+                  <tr key={row.field} className={`${TABLE_ROW} ${row.highlight.includes(metric) ? "bg-surface" : ""}`}>
+                    <th
+                      scope="row"
+                      className={row.part ? "py-3 pr-4 pl-4 text-left font-normal text-ink-2" : TABLE_ROW_HEADER}
+                    >
+                      {row.label}
+                      {row.info && <InfoTip code={row.info.code} text={row.info.text} label={row.label} />}
+                    </th>
+                    <td data-label={nameA} className={value(a)}>{text(a)}</td>
+                    <td data-label={nameB} className={value(b)}>{text(b)}</td>
+                    <td data-label="A vs B" className={`${TABLE_CELL} whitespace-nowrap text-right text-ink-2`}>
                       {diff == null ? "—" : `${diff > 0 ? "+" : ""}${d3.format(".0%")(diff)}`}
                     </td>
                   </tr>
@@ -158,18 +213,72 @@ function Picker({
         {label}
       </span>
       <span className="sr-only">Municipality {label}</span>
-      <select
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="max-w-[11rem] rounded-md border border-line bg-panel px-2 py-1 sm:max-w-none"
-      >
-        {options.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
-          </option>
-        ))}
-      </select>
+      {/* Native arrow hidden and replaced with the dashboard chevron, so the box fits the name plus the arrow */}
+      <span className="relative">
+        <select
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="max-w-[11rem] cursor-pointer appearance-none rounded-md border border-line bg-panel py-1 pl-2.5 pr-7 sm:max-w-none"
+        >
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>
+              {o.name}
+            </option>
+          ))}
+        </select>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          className="pointer-events-none absolute right-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-2"
+        >
+          <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
     </label>
+  );
+}
+
+/** "i" button that shows a Financial Information Return line on click; closes on outside click or Escape. */
+function InfoTip({ code, text, label }: { code: string; text: string; label: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <span ref={ref} className="relative ml-1.5 inline-block align-middle">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={`About ${label}: line ${code}`}
+        className="grid h-4 w-4 cursor-pointer place-items-center rounded-full border border-ink-3 text-[10px] font-semibold leading-none text-ink-2 hover:border-ink hover:text-ink"
+      >
+        i
+      </button>
+      {open && (
+        <span
+          role="tooltip"
+          className="absolute left-0 top-full z-20 mt-1.5 block w-64 rounded-md border border-line bg-panel px-3 py-2 text-xs font-normal text-ink shadow-sm"
+        >
+          <span className="font-semibold tabular-nums">{code}</span> {text}
+        </span>
+      )}
+    </span>
   );
 }
 

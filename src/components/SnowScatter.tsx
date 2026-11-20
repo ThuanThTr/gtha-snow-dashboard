@@ -185,12 +185,6 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
           </svg>
         )}
       </div>
-      <p className="text-xs text-ink-2">
-        Each dot is one municipality, sized by population. Dashed lines mark the GTHA average (spending per resident is
-        GTHA-wide: total spending ÷ total population, averaged over {years[0]}–{years.at(-1)}). The snowy, rural ones sit higher on the chart, Uxbridge most
-        of all. Snow is one reason. Service levels, road networks and contracts drive the cost too. And the snowfall
-        numbers are estimates.
-      </p>
     </section>
   );
 }
