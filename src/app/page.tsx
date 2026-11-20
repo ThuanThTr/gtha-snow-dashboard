@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import * as d3 from "d3";
 import type { FeatureCollection, Geometry } from "geojson";
 
-import Sidebar from "@/components/Sidebar";
 import SiteHeader from "@/components/SiteHeader";
 import GthaMap, { type LegendItem, type MunFeatureProps } from "@/components/Map";
 import Comparison from "@/components/Comparison";
@@ -40,6 +40,14 @@ const seriesById = seriesByMunicipality(data.records);
 const MIN_YEAR = data.years[0]!;
 const MAX_YEAR = data.years.at(-1)!;
 
+/** Short instructions shown at the top of the dashboard. */
+const HOW_TO_STEPS = [
+  "Select a year using the slider to explore available historical data.",
+  "Choose an indicator above the map to view spending or other municipal characteristics.",
+  "Hover over a municipality to see its available indicators and supporting information.",
+  "Select two municipalities to compare their results side by side.",
+];
+
 const PAIR_KEY = "gtha-compare-pair";
 const KNOWN_IDS = new Set(data.records.map((r) => r.munId));
 const DEFAULT_PAIR: [string, string] = ["20002", "21005"]; // Toronto, Mississauga
@@ -70,7 +78,8 @@ function savePair(a: string, b: string) {
 
 
 export default function Page() {
-  const [tab, setTab] = useState<"dashboard" | "overview">("dashboard");
+  const router = useRouter();
+  const howToRef = useRef<HTMLDetailsElement>(null);
   const [year, setYear] = useState(HEADLINE_YEAR);
   const [metric, setMetric] = useState<MetricKey>("spendPerCapita");
   const [selA, setSelA] = useState<string | null>(DEFAULT_PAIR[0]);
@@ -79,9 +88,27 @@ export default function Page() {
   const [geo, setGeo] = useState<FeatureCollection<Geometry, MunFeatureProps> | null>(null);
   const [geoError, setGeoError] = useState(false);
 
-  // Open the Overview tab when linked as "/?tab=overview" (e.g. from a profile page).
+  // The Overview tab was merged into the project description; send old "/?tab=overview" links there.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("tab") === "overview") setTab("overview");
+    if (new URLSearchParams(window.location.search).get("tab") === "overview") router.replace("/project");
+  }, [router]);
+
+  // Close the "How to explore" dropdown on a click outside it or on Escape.
+  useEffect(() => {
+    function close(e: Event) {
+      const el = howToRef.current;
+      if (!el?.open) return;
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !el.contains(e.target as Node)) {
+        el.open = false;
+        if (e instanceof KeyboardEvent) el.querySelector("summary")?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", close);
+    };
   }, []);
 
   // Restore the last saved pair after mount, so the server render matches the default.
@@ -141,25 +168,31 @@ export default function Page() {
     setNextSlot(nextSlot === "A" ? "B" : "A");
   }
 
-  /** Switches tabs and keeps the URL in step, so "/?tab=overview" links work. */
-  function changeTab(next: "dashboard" | "overview") {
-    setTab(next);
-    window.history.replaceState(null, "", next === "overview" ? "/?tab=overview" : "/");
-  }
-
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader active={tab} onTab={changeTab} />
+      <SiteHeader active="dashboard" />
 
-      {tab === "overview" ? (
-        <main id="panel-overview" className="w-full">
-          <Sidebar />
-        </main>
-      ) : (
       <main
         id="panel-dashboard"
         className="flex min-w-0 flex-1 flex-col gap-4 p-3 sm:p-4 lg:p-6"
       >
+        <details ref={howToRef} className="group relative self-start">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-ink hover:underline hover:underline-offset-2 [&::-webkit-details-marker]:hidden">
+            How to explore the dashboard
+            <svg aria-hidden="true" viewBox="0 0 12 12" className="h-3 w-3 text-ink-2 transition-transform group-open:rotate-180">
+              <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </summary>
+          <ol className="absolute left-0 top-full z-10 mt-1 flex w-[min(28rem,calc(100vw-1.5rem))] flex-col gap-2 rounded-md border border-line bg-panel p-4 text-sm leading-snug text-ink-2 shadow-lg">
+            {HOW_TO_STEPS.map((step, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="font-semibold text-ink tabular-nums">{i + 1}.</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+        </details>
+
         {/* Map on the left, comparison on the right, so both are visible together */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-4">
@@ -192,18 +225,28 @@ export default function Page() {
             <label className="sr-only" htmlFor="metric">
               Map metric
             </label>
-            <select
-              id="metric"
-              value={metric}
-              onChange={(e) => setMetric(e.target.value as MetricKey)}
-              className="w-full rounded-md border border-line bg-panel px-3 py-1.5 text-sm sm:w-auto"
-            >
-              {DROPDOWN_METRICS.map((key) => (
-                <option key={key} value={key}>
-                  {METRIC_BY_KEY[key].label}
-                </option>
-              ))}
-            </select>
+            {/* Native arrow hidden and replaced with the same chevron as "How to explore the dashboard" */}
+            <span className="relative w-full sm:w-auto">
+              <select
+                id="metric"
+                value={metric}
+                onChange={(e) => setMetric(e.target.value as MetricKey)}
+                className="w-full cursor-pointer appearance-none rounded-md border border-line bg-panel py-1.5 pl-3 pr-8 text-sm font-medium text-ink sm:w-auto"
+              >
+                {DROPDOWN_METRICS.map((key) => (
+                  <option key={key} value={key}>
+                    {METRIC_BY_KEY[key].label}
+                  </option>
+                ))}
+              </select>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 12 12"
+                className="pointer-events-none absolute right-3 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-2"
+              >
+                <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
           </div>
         </div>
 
@@ -249,7 +292,6 @@ export default function Page() {
           <SnowScatter records={data.records} />
         </div>
       </main>
-      )}
     </div>
   );
 }
