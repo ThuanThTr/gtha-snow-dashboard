@@ -447,7 +447,7 @@ export default function GthaMap({
 /** Which tier of government the municipality is; each tier has its own winter maintenance mandate. */
 function TierNote({ record }: { record: MunicipalRecord }) {
   if (record.tier == null) return null;
-  return <p className="text-xs italic text-ink-2">{record.tier === "Upper-tier" ? "Upper-tier" : "Lower-tier"} municipality</p>;
+  return <p className="text-xs italic text-ink-2">{record.tier === "Single-tier" ? "Single-tier" : "Lower-tier"} municipality</p>;
 }
 
 /** Spending per resident across all years, with the active year marked. Gaps are years not reported. */

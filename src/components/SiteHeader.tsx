@@ -47,6 +47,13 @@ export default function SiteHeader({ active, currentSlug }: { active: SiteSectio
         </div>
         <nav aria-label="Sections" className="grid w-full grid-cols-2 text-sm sm:w-auto sm:grid-cols-3 sm:items-end sm:gap-1 sm:self-center">
           <Link
+            href="/project"
+            aria-current={active === "project" ? "page" : undefined}
+            className={`${TAB_CLASS} ${tabColor(active === "project")} col-span-2 sm:col-span-1`}
+          >
+            Project overview
+          </Link>
+          <Link
             href="/"
             aria-current={active === "dashboard" ? "page" : undefined}
             className={`${TAB_CLASS} ${tabColor(active === "dashboard")}`}
@@ -94,13 +101,6 @@ export default function SiteHeader({ active, currentSlug }: { active: SiteSectio
               />
             </svg>
           </span>
-          <Link
-            href="/project"
-            aria-current={active === "project" ? "page" : undefined}
-            className={`${TAB_CLASS} ${tabColor(active === "project")} col-span-2 sm:col-span-1`}
-          >
-            Project overview
-          </Link>
         </nav>
       </div>
     </header>

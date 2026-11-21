@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import type { MunicipalRecord } from "@/lib/types";
 import {
@@ -128,7 +128,7 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
     <section className="min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4" aria-labelledby="compare-title">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 id="compare-title" className="text-base font-semibold">
-          {vsAverage ? "Compare to the GTHA average" : "Compare municipalities"} · {year}
+          {vsAverage ? "Compare to the GTHA average" : "Compare municipalities"} in {year}
         </h2>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Picker label="A" color={SERIES_A} value={selA} options={municipalities} onChange={onChangeA} />
@@ -327,8 +327,10 @@ function InfoTip({ schedule, code, text, label }: { schedule: string; code: stri
   );
 }
 
-const H = 220;
-const M = { top: 16, right: 16, bottom: 28, left: 64 };
+// Same chart standard as the snowfall scatter: blue axes, 11px labels, axis titles, tooltip beside the point.
+const H = 260;
+const M = { top: 16, right: 20, bottom: 44, left: 72 };
+const TIP_W = 200;
 
 function TrendChart({
   records,
@@ -395,9 +397,9 @@ function TrendChart({
       .join("g")
       .attr("class", "x")
       .attr("transform", `translate(0,${H - M.bottom})`)
-      .call(d3.axisBottom(x).ticks(Math.min(years.length, Math.floor(innerW / 48))).tickFormat(d3.format("d")).tickSizeOuter(0))
-      .call((g) => g.selectAll("path,line").attr("stroke", "#d6d5d0"))
-      .call((g) => g.selectAll("text").attr("fill", "#52514e"));
+      .call(d3.axisBottom(x).ticks(Math.min(years.length, Math.floor(innerW / 48))).tickFormat(d3.format("d")).tickSize(0).tickPadding(10))
+      .call((g) => g.select(".domain").attr("stroke", "#c8e0f4"))
+      .call((g) => g.selectAll("text").attr("fill", "#557388").attr("font-size", 11));
 
     root
       .selectAll<SVGGElement, null>("g.y")
@@ -407,8 +409,31 @@ function TrendChart({
       .attr("transform", `translate(${M.left},0)`)
       .call(d3.axisLeft(y).ticks(4).tickSize(-innerW).tickFormat((v) => def.formatShort(v as number)))
       .call((g) => g.select(".domain").remove())
-      .call((g) => g.selectAll("line").attr("stroke", "#ecebe7"))
-      .call((g) => g.selectAll("text").attr("fill", "#52514e"));
+      .call((g) => g.selectAll("line").attr("stroke", "#e3f2fc"))
+      .call((g) => g.selectAll("text").attr("fill", "#557388").attr("font-size", 11).attr("dx", -4));
+
+    // Axis titles
+    root
+      .selectAll<SVGTextElement, string>("text.x-title")
+      .data(["Year"])
+      .join("text")
+      .attr("class", "x-title")
+      .attr("x", M.left + innerW / 2)
+      .attr("y", H - 6)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 11)
+      .attr("fill", "#4a6a88")
+      .text((d) => d);
+    root
+      .selectAll<SVGTextElement, string>("text.y-title")
+      .data([def.label])
+      .join("text")
+      .attr("class", "y-title")
+      .attr("transform", `translate(14 ${M.top + (H - M.top - M.bottom) / 2}) rotate(-90)`)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 11)
+      .attr("fill", "#4a6a88")
+      .text((d) => d);
 
     // Active-year marker
     root
@@ -420,8 +445,22 @@ function TrendChart({
       .attr("x2", (d) => x(d))
       .attr("y1", M.top)
       .attr("y2", H - M.bottom)
-      .attr("stroke", "#8a8983")
-      .attr("stroke-dasharray", "3 3");
+      .attr("stroke", "#557388")
+      .attr("stroke-opacity", 0.6)
+      .attr("stroke-dasharray", "4 3");
+
+    // Hover crosshair
+    root
+      .selectAll<SVGLineElement, number>("line.hover")
+      .data(hoverYear != null ? [hoverYear] : [])
+      .join("line")
+      .attr("class", "hover")
+      .attr("x1", (d) => x(d))
+      .attr("x2", (d) => x(d))
+      .attr("y1", M.top)
+      .attr("y2", H - M.bottom)
+      .attr("stroke", "#c8e0f4")
+      .attr("pointer-events", "none");
 
     const line = d3
       .line<{ year: number; value: number | null }>()
@@ -458,6 +497,7 @@ function TrendChart({
       .attr("fill", (d) => d.color)
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 2)
+      .attr("pointer-events", "none")
       .attr("cx", (d) => d.cx)
       .attr("cy", (d) => d.cy);
 
@@ -474,38 +514,58 @@ function TrendChart({
       .attr("fill", "transparent")
       .on("pointermove", (event: PointerEvent) => {
         const [px] = d3.pointer(event);
-        setHoverYear(Math.round(x.invert(px)));
+        const yr = Math.round(x.invert(px));
+        setHoverYear(Math.max(years[0]!, Math.min(years.at(-1)!, yr)));
       })
       .on("pointerleave", () => setHoverYear(null));
   }, [width, series, years, year, def, hoverYear]);
 
-  const tipX = hoverYear != null && width ? hoverYear : null;
+  // Tooltip beside the hovered year, flipped to the left near the right edge.
+  let tip: { left: number; top: number } | null = null;
+  if (hoverYear != null && width) {
+    const x = d3.scaleLinear().domain(d3.extent(years) as [number, number]).range([M.left, width - M.right]);
+    const cx = x(hoverYear);
+    const left = cx + 12 + TIP_W > width ? cx - 12 - TIP_W : cx + 12;
+    tip = { left: Math.max(0, left), top: M.top };
+  }
 
   return (
-    <div>
-      <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
-        <span className="font-medium text-ink">{def.label} over time</span>
-        {series.map((s) => (
-          <span key={s.slot} className="flex items-center gap-1.5">
-            <span className="h-0.5 w-4 rounded" style={{ background: s.color }} />
-            {s.name}
-          </span>
-        ))}
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h3 className="text-base font-semibold">
+          {def.label}, {years[0]} to {years.at(-1)}
+        </h3>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
+          {series.map((s) => (
+            <span key={s.slot} className="flex items-center gap-1.5">
+              <span className="h-0.5 w-4 rounded" style={{ background: s.color }} />
+              {s.name}
+            </span>
+          ))}
+        </div>
       </div>
       <div ref={wrapRef} className="relative">
         <svg ref={svgRef} width={width} height={H} role="img" aria-label={`${def.label} by year for the selected municipalities`} />
-        {tipX != null && (
-          <div className="pointer-events-none absolute top-0 right-0 rounded-md border border-line bg-panel px-2.5 py-1.5 text-xs shadow-sm">
-            <p className="mb-0.5 font-semibold">{tipX}</p>
-            {series.map((s) => (
-              <p key={s.slot} className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
-                  {s.name}
-                </span>
-                <span className="tabular-nums">{formatMetric(metric, s.points.find((p) => p.year === tipX)?.value)}</span>
-              </p>
-            ))}
+        {hoverYear != null && tip && (
+          <div
+            role="tooltip"
+            className="pointer-events-none absolute z-10 rounded-lg border border-line bg-panel p-3 text-sm shadow-lg"
+            style={{ left: tip.left, top: tip.top, width: TIP_W }}
+          >
+            <p className="mb-1.5 font-semibold">{hoverYear}</p>
+            <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-xs">
+              {series.map((s) => (
+                <Fragment key={s.slot}>
+                  <dt className="flex items-center gap-1.5 text-ink-2">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
+                    {s.name}
+                  </dt>
+                  <dd className="text-right font-semibold tabular-nums text-ink">
+                    {formatMetric(metric, s.points.find((p) => p.year === hoverYear)?.value)}
+                  </dd>
+                </Fragment>
+              ))}
+            </dl>
           </div>
         )}
       </div>

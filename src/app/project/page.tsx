@@ -183,8 +183,8 @@ export default function ProjectPage() {
           <li>Winter control for its sidewalks and parking lots.</li>
         </ul>
         <p className={BODY}>
-          Municipalities are either upper tier or lower tier. Toronto and Hamilton are upper tier, as are the Regions of
-          Durham, Halton, Peel and York. The cities and towns within a Region are lower tier. Each tier has its own winter
+          Toronto and Hamilton are single-tier cities. Everywhere else there are two tiers: the Regions of Durham, Halton,
+          Peel and York are upper tier. The cities and towns within a Region are lower tier. Each tier has its own winter
           maintenance mandate and budget, so an area’s total adds both: for example, Peel’s total is the Region of Peel
           plus Mississauga, Brampton and Caledon. The municipality pages show the split between roads, sidewalks and
           parking lots. Some municipalities report sidewalks and parking lots together with roads, so those years show

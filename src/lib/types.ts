@@ -1,8 +1,8 @@
 /**
  * Which level of government the record belongs to. Each tier has its own winter maintenance mandate.
- * Upper tier: Toronto and Hamilton (single-tier cities) and the Regions. Lower tier: cities and towns within a Region.
+ * Single tier: Toronto and Hamilton, which handle all winter maintenance themselves. Lower tier: cities and towns within a Region.
  */
-export type Tier = "Upper-tier" | "Lower-tier";
+export type Tier = "Single-tier" | "Lower-tier";
 
 /** One municipality in one year, after merging and calculating measures. */
 export interface MunicipalRecord {

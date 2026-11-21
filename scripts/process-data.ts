@@ -86,11 +86,9 @@ for (const row of readCsv(RAW.costs)) {
     continue;
   }
   const year = Number(row.year);
-  const rawTier = row.tier!.trim();
-  // The CSV labels Toronto and Hamilton "Single-tier"; they sit in the upper tier alongside the Regions.
-  const tier = rawTier === "Single-tier" ? "Upper-tier" : rawTier;
-  if (tier !== "Upper-tier" && tier !== "Lower-tier") {
-    warnings.push(`Unknown tier "${rawTier}" for mun-id ${munId} ${year} – skipped`);
+  const tier = row.tier!.trim();
+  if (tier !== "Single-tier" && tier !== "Lower-tier") {
+    warnings.push(`Unknown tier "${tier}" for mun-id ${munId} ${year} – skipped`);
     continue;
   }
   const population = num(row["population-2021"]);

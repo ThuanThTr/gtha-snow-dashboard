@@ -13,6 +13,7 @@ const M = { top: 16, right: 20, bottom: 44, left: 56 };
 export default function SnowScatter({ records }: { records: MunicipalRecord[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const [hoverId, setHoverId] = useState<string | null>(null);
   const points = useMemo(() => snowVsSpending(records), [records]);
   const years = useMemo(() => [...new Set(records.map((r) => r.year))].sort((a, b) => a - b), [records]);
   // GTHA average over all years: mean of the yearly GTHA-wide spending per resident and of yearly average snowfall.
@@ -68,15 +69,24 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
       return { ...p, lx, ly };
     });
 
+  // ---- tooltip: beside the hovered dot, flipped to the left near the right edge ----
+  const TIP_W = 200;
+  const hovered = hoverId ? points.find((p) => p.munId === hoverId) : undefined;
+  let tip: { left: number; top: number } | null = null;
+  if (hovered) {
+    const cx = x(hovered.avgSnowMm);
+    const cy = y(hovered.perResident);
+    const gap = r(hovered.population) + 10;
+    const left = cx + gap + TIP_W > width ? cx - gap - TIP_W : cx + gap;
+    tip = { left: Math.max(0, Math.min(left, width - TIP_W)), top: Math.max(0, Math.min(cy - 30, H - 80)) };
+  }
+
   return (
     <section aria-labelledby="scatter-title" className="flex flex-col gap-3 min-w-0 rounded-xl border border-line bg-panel p-3 sm:p-4">
-      <div>
-        <h2 id="scatter-title" className="text-base font-semibold">
-          Snowfall and spending, {years[0]} to {years.at(-1)}
-        </h2>
-        <p className="text-xs italic text-ink-2">Do snowier places spend more?</p>
-      </div>
-      <div ref={wrapRef}>
+      <h2 id="scatter-title" className="text-base font-semibold">
+        Snowfall and spending, {years[0]} to {years.at(-1)}
+      </h2>
+      <div ref={wrapRef} className="relative">
         {width > 0 && (
           <svg
             width={width}
@@ -159,12 +169,17 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
                   cy={y(p.perResident)}
                   r={r(p.population)}
                   fill="#2f4d6a"
-                  fillOpacity={0.6}
-                  stroke="#ffffff"
-                  strokeWidth={1}
-                >
-                  <title>{`${p.name}: ${Math.round(p.avgSnowMm)} mm of snow, $${Math.round(p.perResident)} per resident`}</title>
-                </circle>
+                  fillOpacity={hoverId === p.munId ? 0.9 : 0.6}
+                  stroke={hoverId === p.munId ? "#b5461a" : "#ffffff"}
+                  strokeWidth={hoverId === p.munId ? 2 : 1}
+                  tabIndex={0}
+                  aria-label={`${p.name}: ${Math.round(p.avgSnowMm)} mm of snow, $${Math.round(p.perResident)} per resident`}
+                  className="cursor-pointer focus:outline-none"
+                  onPointerEnter={() => setHoverId(p.munId)}
+                  onPointerLeave={() => setHoverId((id) => (id === p.munId ? null : id))}
+                  onFocus={() => setHoverId(p.munId)}
+                  onBlur={() => setHoverId(null)}
+                />
               ))}
             {labels.map((p) => (
                 <text
@@ -178,11 +193,27 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
                   stroke="#ffffff"
                   strokeWidth={3}
                   paintOrder="stroke"
+                  pointerEvents="none"
                 >
                   {p.name}
                 </text>
               ))}
           </svg>
+        )}
+        {hovered && tip && (
+          <div
+            role="tooltip"
+            className="pointer-events-none absolute z-10 rounded-lg border border-line bg-panel p-3 text-sm shadow-lg"
+            style={{ left: tip.left, top: tip.top, width: TIP_W }}
+          >
+            <p className="mb-1.5 font-semibold">{hovered.name}</p>
+            <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-xs">
+              <dt className="text-ink-2">Avg spending per resident</dt>
+              <dd className="text-right font-semibold tabular-nums text-ink">${Math.round(hovered.perResident)}</dd>
+              <dt className="text-ink-2">Avg snowfall per year</dt>
+              <dd className="text-right font-semibold tabular-nums text-ink">{Math.round(hovered.avgSnowMm)} mm</dd>
+            </dl>
+          </div>
         )}
       </div>
     </section>

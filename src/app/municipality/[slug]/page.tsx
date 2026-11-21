@@ -183,7 +183,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
               label="Share of operating expenses"
               value={formatMetric("winterShareOfOperating", latest.winterShareOfOperating)}
             />
-            <Stat label="Tier" value={latest.tier === "Upper-tier" ? "Upper tier" : "Lower tier"} />
+            <Stat label="Tier" value={latest.tier === "Single-tier" ? "Single tier" : "Lower tier"} />
             <Stat label={METRIC_BY_KEY.avgSnowMm.label} value={formatMetric("avgSnowMm", latest.avgSnowMm)} />
           </dl>
         </section>
