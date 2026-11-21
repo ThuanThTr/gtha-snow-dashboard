@@ -29,9 +29,31 @@ interface TableRow {
   part?: boolean;
   /** Text shown for a reported zero (e.g. sidewalks folded into roads). */
   zeroText?: string;
-  /** Financial Information Return line, shown in an info popover. */
-  info?: { code: string; text: string };
+  /** Financial Information Return schedule and line, shown in an info popover. */
+  info?: { schedule: string; code: string; text: string };
+  /**
+   * The value is itself a share (0 to 1), so A vs B is the difference in percentage points, not a relative change:
+   * 0.94% vs 0.85% reads "+0.09 pts", where a relative change would read a misleading "+10%".
+   */
+  points?: boolean;
 }
+
+/** A vs B: percentage-point gap for shares, measured on the values as displayed (2 decimals); relative change otherwise. */
+function compare(a: number, b: number, points: boolean | undefined): { text: string; sign: number } {
+  if (points) {
+    const gap = Math.round(a * 10000) / 100 - Math.round(b * 10000) / 100;
+    if (Math.abs(gap) < 0.005) return { text: "0 pts", sign: 0 };
+    return { text: `${gap > 0 ? "+" : "−"}${Math.abs(gap).toFixed(2)} pts`, sign: Math.sign(gap) };
+  }
+  const diff = (a - b) / b;
+  const text = d3.format(".0%")(diff);
+  // Colour by the sign of what is shown, so a gap that rounds to "0%" stays neutral.
+  const sign = text === "0%" || text === "−0%" ? 0 : Math.sign(diff);
+  return { text: sign === 0 ? "0%" : `${diff > 0 ? "+" : ""}${text}`, sign };
+}
+
+/** A vs B colour: positive green, negative red, no difference neutral. */
+const SIGN_COLOR = { 1: "text-up", [-1]: "text-down", 0: "text-ink-2" } as Record<number, string>;
 
 /** Rows of the side-by-side table, in display order. */
 const TABLE_ROWS: TableRow[] = [
@@ -42,7 +64,7 @@ const TABLE_ROWS: TableRow[] = [
     format: "totalExpenses",
     highlight: ["totalExpenses"],
     part: true,
-    info: { code: "0621", text: "Winter Control - Except Sidewalks, Parking Lots" },
+    info: { schedule: "40", code: "0621", text: "Winter Control - Except Sidewalks, Parking Lots" },
   },
   {
     field: "sidewalksCost",
@@ -51,16 +73,23 @@ const TABLE_ROWS: TableRow[] = [
     highlight: ["totalExpenses"],
     part: true,
     zeroText: "n/a",
-    info: { code: "0622", text: "Winter Control - Sidewalks, Parking Lots Only" },
+    info: { schedule: "40", code: "0622", text: "Winter Control - Sidewalks, Parking Lots Only" },
   },
   { field: "spendPerCapita", label: METRIC_BY_KEY.spendPerCapita.label, format: "spendPerCapita", highlight: ["spendPerCapita", "changeSince2016"] },
   { field: "spendPerKm", label: METRIC_BY_KEY.spendPerKm.label, format: "spendPerKm", highlight: ["spendPerKm"] },
-  { field: "operatingExpense", label: METRIC_BY_KEY.operatingExpense.label, format: "operatingExpense", highlight: ["operatingExpense"] },
+  {
+    field: "operatingExpense",
+    label: METRIC_BY_KEY.operatingExpense.label,
+    format: "operatingExpense",
+    highlight: ["operatingExpense"],
+    info: { schedule: "40", code: "9910", text: "Total Expenses Before Adjustments" },
+  },
   {
     field: "winterShareOfOperating",
     label: METRIC_BY_KEY.winterShareOfOperating.label,
     format: "winterShareOfOperating",
     highlight: ["winterShareOfOperating"],
+    points: true,
   },
   { field: "avgSnowMm", label: METRIC_BY_KEY.avgSnowMm.label, format: "avgSnowMm", highlight: ["avgSnowMm"] },
 ];
@@ -166,7 +195,9 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
                 const b = pick(recB);
                 // Skip the comparison when a component is a reported zero: "−100%" would mislead.
                 const diff =
-                  a != null && b != null && b !== 0 && !(row.zeroText && a === 0) ? (a - b) / b : null;
+                  a != null && b != null && (row.points || b !== 0) && !(row.zeroText && a === 0)
+                    ? compare(a, b, row.points)
+                    : null;
                 const text = (v: number | null) => (v === 0 && row.zeroText ? row.zeroText : formatMetric(row.format, v));
                 const value = (v: number | null) =>
                   `${TABLE_CELL} whitespace-nowrap text-right ${v == null ? TABLE_MISSING : row.part ? "text-ink-2" : "text-ink"}`;
@@ -177,12 +208,15 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
                       className={row.part ? "py-3 pr-4 pl-4 text-left font-normal text-ink-2" : TABLE_ROW_HEADER}
                     >
                       {row.label}
-                      {row.info && <InfoTip code={row.info.code} text={row.info.text} label={row.label} />}
+                      {row.info && <InfoTip {...row.info} label={row.label} />}
                     </th>
                     <td data-label={nameA} className={value(a)}>{text(a)}</td>
                     <td data-label={nameB} className={value(b)}>{text(b)}</td>
-                    <td data-label="A vs B" className={`${TABLE_CELL} whitespace-nowrap text-right text-ink-2`}>
-                      {diff == null ? "—" : `${diff > 0 ? "+" : ""}${d3.format(".0%")(diff)}`}
+                    <td
+                      data-label="A vs B"
+                      className={`${TABLE_CELL} whitespace-nowrap text-right ${diff ? SIGN_COLOR[diff.sign] : "text-ink-2"}`}
+                    >
+                      {diff?.text ?? "—"}
                     </td>
                   </tr>
                 );
@@ -247,7 +281,7 @@ function Picker({
 }
 
 /** "i" button that shows a Financial Information Return line on click; closes on outside click or Escape. */
-function InfoTip({ code, text, label }: { code: string; text: string; label: string }) {
+function InfoTip({ schedule, code, text, label }: { schedule: string; code: string; text: string; label: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
@@ -273,7 +307,7 @@ function InfoTip({ code, text, label }: { code: string; text: string; label: str
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        aria-label={`About ${label}: line ${code}`}
+        aria-label={`About ${label}: Schedule ${schedule}, Item ${code}`}
         className="grid h-4 w-4 cursor-pointer place-items-center rounded-full border border-ink-3 text-[10px] font-semibold leading-none text-ink-2 hover:border-ink hover:text-ink"
       >
         i
@@ -283,7 +317,10 @@ function InfoTip({ code, text, label }: { code: string; text: string; label: str
           role="tooltip"
           className="absolute left-0 top-full z-20 mt-1.5 block w-64 rounded-md border border-line bg-panel px-3 py-2 text-xs font-normal italic text-ink shadow-sm"
         >
-          <span className="font-semibold tabular-nums">{code}</span> {text}
+          <span className="font-semibold tabular-nums">
+            Schedule {schedule}, Item {code},
+          </span>{" "}
+          {text}
         </span>
       )}
     </span>

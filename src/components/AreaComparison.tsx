@@ -26,7 +26,7 @@ export default function AreaComparison({ records, year }: { records: MunicipalRe
                 <span className="text-right tabular-nums text-ink">${Math.round(a.perResident)}</span>
               </>
             ) : (
-              <span className="col-span-2 text-xs italic text-ink-3">Not reported for {year}</span>
+              <span className="col-span-2 text-xs italic text-ink-3">No data for {year}</span>
             )}
           </li>
         ))}

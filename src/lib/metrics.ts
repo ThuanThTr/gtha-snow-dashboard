@@ -33,6 +33,7 @@ export interface MetricDef {
 
 const whole = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 0 });
 const dec1 = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+const dec2 = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 const compact = new Intl.NumberFormat("en-CA", { notation: "compact", maximumFractionDigits: 1 });
 
 /** "$347 million", "$4.3 million", "$850,000". */
@@ -87,7 +88,7 @@ export const METRICS: MetricDef[] = [
   {
     key: "winterShareOfOperating",
     label: "Winter spending as a share of operating expenses",
-    format: (v) => `${dec1.format(v * 100)}%`,
+    format: (v) => `${dec2.format(v * 100)}%`,
     formatShort: (v) => `${dec1.format(v * 100)}%`,
   },
 ];
