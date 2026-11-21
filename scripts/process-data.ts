@@ -5,7 +5,7 @@
  *   src/data/municipal-metrics.json   – one record per municipality per year (long format)
  *   public/data/gtha-boundaries.geojson – GTHA polygons only, trimmed for the web
  *
- * Spending and snowfall come from data/winter-costs-update-20-11-26.csv, the single source. Names and regions come
+ * Spending and snowfall come from data/winter-costs-update-2-21-11-26.csv, the single source. Names and regions come
  * from data/municipality-directory.csv.
  *
  * Run with: npm run data   (also runs automatically before `npm run build`)
@@ -15,11 +15,11 @@ import path from "node:path";
 import { csvParse } from "d3-dsv";
 import { geoArea } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry, Position } from "geojson";
-import type { MunicipalRecord, MetricsFile } from "../src/lib/types";
+import type { MunicipalRecord, MetricsFile, Tier } from "../src/lib/types";
 
 const ROOT = process.cwd();
 const RAW = {
-  costs: path.join(ROOT, "data/winter-costs-update-20-11-26.csv"),
+  costs: path.join(ROOT, "data/winter-costs-update-2-21-11-26.csv"),
   directory: path.join(ROOT, "data/municipality-directory.csv"),
   geo: path.join(ROOT, "geospatial data/Municipal_Boun_FeaturesToJSO.geojson"),
 };
@@ -86,13 +86,17 @@ for (const row of readCsv(RAW.costs)) {
     continue;
   }
   const year = Number(row.year);
+  const tier = row.tier!.trim();
+  if (tier !== "Upper-tier" && tier !== "Lower-tier") {
+    warnings.push(`Unknown tier "${tier}" for mun-id ${munId} ${year} – skipped`);
+    continue;
+  }
   const population = num(row["population-2021"]);
   // A blank total means the municipality did not report that year: keep it null, never 0.
-  const totalExpenses = num(row["total-winter-cost"]);
+  const totalExpenses = num(row["municipality-winter-cost"]);
   const reported = totalExpenses != null;
-  const localCost = reported ? num(row["local-winter-cost"]) : null;
-  const regionalCost = reported ? (num(row["allocated-region-cost"]) ?? 0) : null;
   const operatingExpense = num(row["municipality-total-expense"]);
+  const roadKm = num(row["total-km-road-length"]);
 
   records.push({
     munId,
@@ -100,16 +104,16 @@ for (const row of readCsv(RAW.costs)) {
     fullName: dir.fullName,
     region: dir.region,
     area: row.region!.trim(),
+    tier: tier as Tier,
     year,
-    avgSnowCm: num(row["avg-snow-cm"]),
+    avgSnowMm: num(row["avg-snow-mm"]),
     totalExpenses,
-    localCost,
     roadsCost: reported ? num(row["roads-0621"]) : null,
     sidewalksCost: reported ? num(row["sidewalks-0622"]) : null,
-    regionalCost,
-    regionalShare: safeDiv(regionalCost, totalExpenses),
     population,
     spendPerCapita: safeDiv(totalExpenses, population),
+    roadKm,
+    spendPerKm: safeDiv(totalExpenses, roadKm),
     changeSince2016: null, // filled in below, once every year is loaded
     operatingExpense,
     winterShareOfOperating: safeDiv(totalExpenses, operatingExpense),

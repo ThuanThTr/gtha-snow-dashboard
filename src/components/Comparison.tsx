@@ -40,7 +40,7 @@ const TABLE_ROWS: TableRow[] = [
     field: "roadsCost",
     label: "Roads only",
     format: "totalExpenses",
-    highlight: ["localCost"],
+    highlight: ["totalExpenses"],
     part: true,
     info: { code: "0621", text: "Winter Control - Except Sidewalks, Parking Lots" },
   },
@@ -48,12 +48,13 @@ const TABLE_ROWS: TableRow[] = [
     field: "sidewalksCost",
     label: "Sidewalks and parking lots only",
     format: "totalExpenses",
-    highlight: ["localCost"],
+    highlight: ["totalExpenses"],
     part: true,
     zeroText: "n/a",
     info: { code: "0622", text: "Winter Control - Sidewalks, Parking Lots Only" },
   },
   { field: "spendPerCapita", label: METRIC_BY_KEY.spendPerCapita.label, format: "spendPerCapita", highlight: ["spendPerCapita", "changeSince2016"] },
+  { field: "spendPerKm", label: METRIC_BY_KEY.spendPerKm.label, format: "spendPerKm", highlight: ["spendPerKm"] },
   { field: "operatingExpense", label: METRIC_BY_KEY.operatingExpense.label, format: "operatingExpense", highlight: ["operatingExpense"] },
   {
     field: "winterShareOfOperating",
@@ -61,7 +62,7 @@ const TABLE_ROWS: TableRow[] = [
     format: "winterShareOfOperating",
     highlight: ["winterShareOfOperating"],
   },
-  { field: "avgSnowCm", label: METRIC_BY_KEY.avgSnowCm.label, format: "avgSnowCm", highlight: ["avgSnowCm"] },
+  { field: "avgSnowMm", label: METRIC_BY_KEY.avgSnowMm.label, format: "avgSnowMm", highlight: ["avgSnowMm"] },
 ];
 
 interface ComparisonProps {
@@ -130,6 +131,20 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
         </div>
       </div>
 
+      {vsAverage && (
+        <div className="-mt-2 mb-4 text-xs italic text-ink-2">
+          <p className="font-semibold">GTHA average:</p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+            <li>
+              Spending per resident is GTHA-wide (total winter spending ÷ total population of municipalities reporting
+              that year).
+            </li>
+            <li>The share of operating expenses is GTHA-wide (total winter spending ÷ total operating expenses).</li>
+            <li>Dollar totals and snowfall are the average across reporting municipalities.</li>
+          </ul>
+        </div>
+      )}
+
       <div className="grid gap-6">
         {/* Side-by-side table */}
         <div className="overflow-x-auto">
@@ -178,13 +193,6 @@ export default function Comparison({ records: baseRecords, years, year, metric, 
 
         {/* Trend of the active map metric */}
         <TrendChart records={records} years={years} year={year} metric={metric} selA={selA} selB={selB} />
-        {vsAverage && (
-          <p className="text-xs text-ink-2">
-            GTHA average: spending per resident is GTHA-wide (total winter spending ÷ total population of municipalities
-            reporting that year). The share of operating expenses is GTHA-wide too (total winter spending ÷ total
-            operating expenses). Dollar totals and snowfall are the average across reporting municipalities.
-          </p>
-        )}
       </div>
     </section>
   );
@@ -273,7 +281,7 @@ function InfoTip({ code, text, label }: { code: string; text: string; label: str
       {open && (
         <span
           role="tooltip"
-          className="absolute left-0 top-full z-20 mt-1.5 block w-64 rounded-md border border-line bg-panel px-3 py-2 text-xs font-normal text-ink shadow-sm"
+          className="absolute left-0 top-full z-20 mt-1.5 block w-64 rounded-md border border-line bg-panel px-3 py-2 text-xs font-normal italic text-ink shadow-sm"
         >
           <span className="font-semibold tabular-nums">{code}</span> {text}
         </span>

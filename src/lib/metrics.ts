@@ -13,11 +13,10 @@ export const SERIES_B = "#b5461a"; // Plow rust: 5.4:1 with white badge text
 
 export type MetricKey =
   | "spendPerCapita"
+  | "spendPerKm"
   | "totalExpenses"
-  | "localCost"
-  | "regionalCost"
   | "changeSince2016"
-  | "avgSnowCm"
+  | "avgSnowMm"
   | "operatingExpense"
   | "winterShareOfOperating";
 
@@ -55,20 +54,14 @@ export const METRICS: MetricDef[] = [
     formatShort: dollars,
   },
   {
+    key: "spendPerKm",
+    label: "Winter spending per km of road",
+    format: dollars,
+    formatShort: (v) => `$${compact.format(v)}`,
+  },
+  {
     key: "totalExpenses",
     label: "Total winter spending",
-    format: formatMoneyLong,
-    formatShort: (v) => `$${compact.format(v)}`,
-  },
-  {
-    key: "localCost",
-    label: "Own roads and sidewalks",
-    format: formatMoneyLong,
-    formatShort: (v) => `$${compact.format(v)}`,
-  },
-  {
-    key: "regionalCost",
-    label: "Share of regional roads",
     format: formatMoneyLong,
     formatShort: (v) => `$${compact.format(v)}`,
   },
@@ -80,10 +73,10 @@ export const METRICS: MetricDef[] = [
     diverging: true,
   },
   {
-    key: "avgSnowCm",
+    key: "avgSnowMm",
     label: "Average snowfall (estimated)",
-    format: (v) => `${whole.format(v)} cm`,
-    formatShort: (v) => `${whole.format(v)} cm`,
+    format: (v) => `${whole.format(v)} mm`,
+    formatShort: (v) => `${whole.format(v)} mm`,
   },
   {
     key: "operatingExpense",
@@ -141,7 +134,8 @@ export const GTHA_AVG_ID = "gtha-average";
  * One synthetic record per year for the whole GTHA, so a municipality can be compared to it.
  * Dollar totals and snowfall are the mean across municipalities that report that measure that year
  * (the "average municipality"). Spending per resident is GTHA-wide: total spending ÷ total population
- * of the reporting municipalities. Change since 2016 is measured on that GTHA-wide per-resident figure.
+ * of the reporting municipalities, and spending per km of road is total spending ÷ total road length.
+ * Change since 2016 is measured on that GTHA-wide per-resident figure.
  * The share of operating expenses is also GTHA-wide: total winter spending ÷ total operating expenses.
  */
 export function gthaAverageRecords(records: MunicipalRecord[]): MunicipalRecord[] {
@@ -159,8 +153,11 @@ export function gthaAverageRecords(records: MunicipalRecord[]): MunicipalRecord[
     const pop = reporting.reduce((s, r) => s + r.population!, 0);
     const pc = pop > 0 ? spend / pop : null;
     perCapita.set(year, pc);
+    // GTHA-wide spending per km: total spending ÷ total road length, over municipalities reporting both.
+    const withKm = rows.filter((r) => r.totalExpenses != null && r.roadKm != null);
+    const km = withKm.reduce((s, r) => s + r.roadKm!, 0);
+    const spendPerKm = km > 0 ? withKm.reduce((s, r) => s + r.totalExpenses!, 0) / km : null;
     const totalExpenses = mean(rows, "totalExpenses");
-    const regionalCost = mean(rows, "regionalCost");
     // GTHA-wide share: winter spending ÷ operating expenses, over municipalities reporting both.
     const both = rows.filter((r) => r.totalExpenses != null && r.operatingExpense != null);
     const opex = both.reduce((s, r) => s + r.operatingExpense!, 0);
@@ -171,16 +168,16 @@ export function gthaAverageRecords(records: MunicipalRecord[]): MunicipalRecord[
       fullName: "Greater Toronto and Hamilton Area average",
       region: "GTHA",
       area: "GTHA",
+      tier: null,
       year,
-      avgSnowCm: mean(rows, "avgSnowCm"),
+      avgSnowMm: mean(rows, "avgSnowMm"),
       totalExpenses,
-      localCost: mean(rows, "localCost"),
       roadsCost: mean(rows, "roadsCost"),
       sidewalksCost: mean(rows, "sidewalksCost"),
-      regionalCost,
-      regionalShare: totalExpenses && regionalCost != null ? regionalCost / totalExpenses : null,
       population: mean(rows, "population"),
       spendPerCapita: pc,
+      roadKm: mean(rows, "roadKm"),
+      spendPerKm,
       changeSince2016: null,
       operatingExpense: mean(rows, "operatingExpense"),
       winterShareOfOperating,

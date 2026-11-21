@@ -26,7 +26,7 @@ const mean = (values: number[]) => (values.length ? values.reduce((s, v) => s + 
 export interface YearSummary {
   year: number;
   perResident: number | null;
-  avgSnowCm: number | null;
+  avgSnowMm: number | null;
   reportedCount: number;
   totalCount: number;
 }
@@ -38,7 +38,7 @@ export function yearSummaries(records: MunicipalRecord[]): YearSummary[] {
     return {
       year,
       perResident: pooledPerResident(rs),
-      avgSnowCm: mean(rs.map((r) => r.avgSnowCm).filter((v): v is number => v != null)),
+      avgSnowMm: mean(rs.map((r) => r.avgSnowMm).filter((v): v is number => v != null)),
       reportedCount: rs.filter(reported).length,
       totalCount: rs.length,
     };
@@ -71,7 +71,7 @@ export function areaSummaries(records: MunicipalRecord[]): AreaSummary[] {
 export interface ScatterPoint {
   munId: string;
   name: string;
-  avgSnowCm: number;
+  avgSnowMm: number;
   perResident: number;
   population: number;
 }
@@ -81,11 +81,11 @@ export function snowVsSpending(records: MunicipalRecord[]): ScatterPoint[] {
   const ids = [...new Set(records.map((r) => r.munId))];
   return ids.flatMap((munId) => {
     const rs = records.filter((r) => r.munId === munId);
-    const snow = mean(rs.map((r) => r.avgSnowCm).filter((v): v is number => v != null));
+    const snow = mean(rs.map((r) => r.avgSnowMm).filter((v): v is number => v != null));
     const per = mean(rs.map((r) => r.spendPerCapita).filter((v): v is number => v != null));
     const population = rs[0]?.population ?? null;
     if (snow == null || per == null || population == null) return [];
-    return [{ munId, name: rs[0]!.name, avgSnowCm: snow, perResident: per, population }];
+    return [{ munId, name: rs[0]!.name, avgSnowMm: snow, perResident: per, population }];
   });
 }
 

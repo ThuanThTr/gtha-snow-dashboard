@@ -74,10 +74,6 @@ const sidewalks = (r: MunicipalRecord) =>
       ? "Included in roads"
       : formatMetric("totalExpenses", r.sidewalksCost);
 
-/** Regional roads share as a whole percentage; "None" for cities that run all their own roads. */
-const share = (r: MunicipalRecord) =>
-  r.regionalShare == null ? "No data" : r.regionalCost === 0 ? "None" : `${Math.round(r.regionalShare * 100)}%`;
-
 /** Hero backdrop: the GTHA boundaries with this municipality in the dashboard's dark ink. */
 function HeroMap({ name }: { name: string }) {
   const width = 1000;
@@ -187,8 +183,8 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
               label="Share of operating expenses"
               value={formatMetric("winterShareOfOperating", latest.winterShareOfOperating)}
             />
-            <Stat label="Regional roads share" value={share(latest)} />
-            <Stat label={METRIC_BY_KEY.avgSnowCm.label} value={formatMetric("avgSnowCm", latest.avgSnowCm)} />
+            <Stat label="Tier" value={latest.tier === "Upper-tier" ? "Upper tier" : "Lower tier"} />
+            <Stat label={METRIC_BY_KEY.avgSnowMm.label} value={formatMetric("avgSnowMm", latest.avgSnowMm)} />
           </dl>
         </section>
 
@@ -201,7 +197,6 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
                   <th scope="col" className={TABLE_TH}>Year</th>
                   <th scope="col" className={`${TABLE_TH} text-right`}>Roads</th>
                   <th scope="col" className={`${TABLE_TH} text-right`}>Sidewalks and parking lots</th>
-                  <th scope="col" className={`${TABLE_TH} text-right`}>Regional roads share</th>
                   <th scope="col" className={`${TABLE_TH} text-right`}>Total</th>
                 </tr>
               </thead>
@@ -214,9 +209,6 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
                       <th scope="row" className={TABLE_ROW_HEADER}>{r.year}</th>
                       <td data-label="Roads" className={cell}>{missing ? "No data" : formatMetric("totalExpenses", r.roadsCost)}</td>
                       <td data-label="Sidewalks and parking lots" className={cell}>{sidewalks(r)}</td>
-                      <td data-label="Regional roads share" className={cell}>
-                        {missing ? "No data" : r.regionalCost === 0 ? "None" : formatMetric("regionalCost", r.regionalCost)}
-                      </td>
                       <td data-label="Total" className={`${TABLE_CELL} text-right font-semibold ${missing ? TABLE_MISSING : "text-ink"}`}>
                         {formatMetric("totalExpenses", r.totalExpenses)}
                       </td>
@@ -228,9 +220,9 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
           </div>
           <p className={`${BODY} ${JUSTIFY}`}>
             Roads are the municipality’s own winter control for roads, such as plowing and salting. Some municipalities
-            report sidewalks and parking lots together with roads, which is shown as “Included in roads”. The regional
-            roads share is this municipality’s population share of its Region’s road costs. Contractor and materials
-            costs are not reported separately in the provincial figures.
+            report sidewalks and parking lots together with roads, which is shown as “Included in roads”. The figures are
+            this municipality’s own spending only; its Region, where there is one, has a separate winter maintenance
+            mandate and budget. Contractor and materials costs are not reported separately in the provincial figures.
           </p>
         </section>
 
@@ -245,7 +237,6 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
                   <th scope="col" className={`${TABLE_TH} text-right`}>Total spending</th>
                   <th scope="col" className={`${TABLE_TH} text-right`}>Operating expenses</th>
                   <th scope="col" className={`${TABLE_TH} text-right`}>Share of operating</th>
-                  <th scope="col" className={`${TABLE_TH} text-right`}>Regional roads share</th>
                   <th scope="col" className={`${TABLE_TH} text-right`}>Snowfall (estimated)</th>
                 </tr>
               </thead>
@@ -260,8 +251,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
                       <td data-label="Total spending" className={cell}>{formatMetric("totalExpenses", r.totalExpenses)}</td>
                       <td data-label="Operating expenses" className={cell}>{formatMetric("operatingExpense", r.operatingExpense)}</td>
                       <td data-label="Share of operating" className={cell}>{formatMetric("winterShareOfOperating", r.winterShareOfOperating)}</td>
-                      <td data-label="Regional roads share" className={cell}>{share(r)}</td>
-                      <td data-label="Snowfall (estimated)" className={`${TABLE_CELL} text-right text-ink`}>{formatMetric("avgSnowCm", r.avgSnowCm)}</td>
+                      <td data-label="Snowfall (estimated)" className={`${TABLE_CELL} text-right text-ink`}>{formatMetric("avgSnowMm", r.avgSnowMm)}</td>
                     </tr>
                   );
                 })}
@@ -270,8 +260,7 @@ export default async function MunicipalityPage({ params }: { params: Promise<{ s
           </div>
           <p className={`${BODY} ${JUSTIFY}`}>
             No data means {name} did not report that year; it does not mean nothing was spent. Spending comes from
-            provincial financial reports and covers roads, sidewalks and parking lots, plus a population share of regional
-            road costs where a Region maintains some roads. Spending differences reflect service levels, road networks and
+            provincial financial reports and covers the municipality’s own roads, sidewalks and parking lots. Spending differences reflect service levels, road networks and
             contracts, not just snowfall. Snowfall figures are estimates. See the{" "}
             <Link href="/project" className="underline underline-offset-2">project description</Link> for how each figure is
             calculated.

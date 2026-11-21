@@ -176,21 +176,19 @@ export default function ProjectPage() {
         <p className={BODY}>
           Spending comes from Ontario’s provincial financial reports (the Financial Information Return), the standard
           annual report every municipality files. The dashboard covers {FIRST_YEAR} to {LAST_YEAR} and uses each
-          municipality’s total winter cost, which adds up:
+          municipality’s own total winter cost, which adds up:
         </p>
         <ul className={LIST}>
-          <li>Its own winter control for roads, such as plowing and salting.</li>
-          <li>Its own winter control for sidewalks and parking lots.</li>
-          <li>
-            A share of its Region’s winter road costs. In Durham, Halton, Peel and York, the Region looks after some major
-            roads. Each municipality gets a share of those costs in line with its share of the Region’s population.
-            Toronto and Hamilton run all of their own roads, so they have no regional share.
-          </li>
+          <li>Winter control for its roads, such as plowing and salting.</li>
+          <li>Winter control for its sidewalks and parking lots.</li>
         </ul>
         <p className={BODY}>
-          Adding the regional share makes the totals comparable across all 26 municipalities. The municipality pages show
-          the split between roads, sidewalks and parking lots, and the regional share. Some municipalities report sidewalks
-          and parking lots together with roads, so those years show “Included in roads” instead of a figure.
+          Municipalities are either upper tier or lower tier. Toronto and Hamilton are upper tier, as are the Regions of
+          Durham, Halton, Peel and York. The cities and towns within a Region are lower tier. Each tier has its own winter
+          maintenance mandate and budget, so an area’s total adds both: for example, Peel’s total is the Region of Peel
+          plus Mississauga, Brampton and Caledon. The municipality pages show the split between roads, sidewalks and
+          parking lots. Some municipalities report sidewalks and parking lots together with roads, so those years show
+          “Included in roads” instead of a figure.
         </p>
         <p className={BODY}>
           The reports have gaps. {NOT_REPORTED_COUNT} municipality-years were not reported: {NOT_REPORTED}. These show as
@@ -208,7 +206,7 @@ export default function ProjectPage() {
             every year so that spending per resident is measured the same way across years.
           </li>
           <li>
-            <span className="font-medium text-ink">Snowfall:</span> estimated average annual snowfall in centimetres, to
+            <span className="font-medium text-ink">Snowfall:</span> estimated average annual snowfall in millimetres, to
             show how winter weather relates to reported spending. The year-to-year pattern is almost identical in every
             municipality, which suggests the figures are modelled rather than measured locally. Treat them as estimates.
           </li>
@@ -244,15 +242,16 @@ export default function ProjectPage() {
           We combined the spending, population and snowfall data by municipality and year, then calculated these measures.
         </p>
         <dl className="flex flex-col divide-y divide-line text-base">
-          <Formula name="Total winter spending">own roads and sidewalks + regional roads share</Formula>
+          <Formula name="Total winter spending">roads + sidewalks and parking lots</Formula>
+          <Formula name="Area total">upper-tier spending + lower-tier spending, by region and year</Formula>
           <Formula name="Spending per resident">total winter spending ÷ 2021 population</Formula>
+          <Formula name="Spending per km of road">total winter spending ÷ total road length (km)</Formula>
           <Formula name="Change since 2016">spending per resident in a year ÷ spending per resident in 2016, minus 1</Formula>
-          <Formula name="Regional roads share">regional roads share ÷ total winter spending</Formula>
         </dl>
         <p className={BODY}>
           Area averages (for example, York Region) add up the spending of the municipalities that reported that year and
-          divide by their combined population, so larger municipalities count for more. We do not use road length: the
-          available figures are not consistent across the 26 municipalities, so we do not report spending per kilometre.
+          divide by their combined population, so larger municipalities count for more. Spending per km of road divides
+          each municipality’s total winter spending by its total road length.
         </p>
       </section>
 
@@ -270,8 +269,8 @@ export default function ProjectPage() {
               </tr>
             </thead>
             <tbody className="tabular-nums">
-              <Step label="Own roads and sidewalks" value={dollars(example.localCost)} />
-              <Step label="Share of regional roads" value={dollars(example.regionalCost)} />
+              <Step label="Roads" value={dollars(example.roadsCost)} />
+              <Step label="Sidewalks and parking lots" value={dollars(example.sidewalksCost)} />
               <Step label="Total winter spending" value={dollars(example.totalExpenses)} strong />
               <Step label="Population (2021 Census)" value={number(example.population)} />
               <Step

@@ -14,7 +14,7 @@ const TOOLTIP_DETAILS: { key: MetricKey; label: string }[] = [
   { key: "spendPerCapita", label: "Spending per resident" },
   { key: "totalExpenses", label: "Total winter spending" },
   { key: "winterShareOfOperating", label: "Share of operating expenses" },
-  { key: "avgSnowCm", label: "Average snowfall (estimated)" },
+  { key: "avgSnowMm", label: "Average snowfall (estimated)" },
 ];
 
 export interface MunFeatureProps {
@@ -430,7 +430,7 @@ export default function GthaMap({
                   </Fragment>
                 ))}
               </dl>
-              <ShareBar record={hovered} />
+              <TierNote record={hovered} />
             </div>
           ) : (
             <p className="text-ink-2">
@@ -444,28 +444,10 @@ export default function GthaMap({
   );
 }
 
-/** Own roads and sidewalks versus the population share of regional road costs. */
-function ShareBar({ record }: { record: MunicipalRecord }) {
-  if (record.regionalShare == null) return null;
-  if (record.regionalCost === 0) {
-    return <p className="text-xs text-ink-2">The city runs all of its own roads, so there is no regional roads share.</p>;
-  }
-  const share = record.regionalShare;
-  const pct = (v: number) => `${Math.round(v * 100)}%`;
-  return (
-    <div className="flex flex-col gap-1 text-xs">
-      <div className="flex h-2.5 overflow-hidden rounded-sm" aria-hidden="true">
-        <span style={{ width: `${(1 - share) * 100}%`, background: "#2f4d6a" }} />
-        <span style={{ width: `${share * 100}%`, background: "#88aecf" }} />
-      </div>
-      <div className="flex justify-between gap-2 text-ink-2">
-        <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-sm" style={{ background: "#2f4d6a" }} />
-          Own roads and sidewalks {pct(1 - share)}
-        </span>
-      </div>
-    </div>
-  );
+/** Which tier of government the municipality is; each tier has its own winter maintenance mandate. */
+function TierNote({ record }: { record: MunicipalRecord }) {
+  if (record.tier == null) return null;
+  return <p className="text-xs italic text-ink-2">{record.tier === "Upper-tier" ? "Upper-tier" : "Lower-tier"} municipality</p>;
 }
 
 /** Spending per resident across all years, with the active year marked. Gaps are years not reported. */

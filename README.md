@@ -36,11 +36,11 @@ Runs automatically before `dev` and `build`.
 
 Inputs (kept in the repo so Vercel can rebuild):
 
-- `data/winter-costs-update-20-11-26.csv`: the single source for spending and snowfall. One row per municipality per year, 2015–2025: roads (0621), sidewalks and parking lots (0622), the population share of the Region's road costs, the total, cost per resident, 2021 population, estimated snowfall in cm, and the municipality's total operating expense. Edit this file directly. Blank totals mean the municipality did not report that year. Sidewalk zeros mean the municipality reports them with roads.
+- `data/winter-costs-update-2-21-11-26.csv`: the single source for spending and snowfall. One row per municipality per year, 2015–2025: roads (0621), sidewalks and parking lots (0622), the tier (Upper-tier for Toronto and Hamilton, Lower-tier for municipalities within a Region), the total, cost per resident, 2021 population, estimated snowfall in mm, and the municipality's total operating expense. Edit this file directly. Blank totals mean the municipality did not report that year. Sidewalk zeros mean the municipality reports them with roads.
 - `data/municipality-directory.csv`: names and regions
 - `geospatial data/Municipal_Boun_FeaturesToJSO.geojson`
 
-Steps: read winter costs → join the directory on `mun-id` → compute measures (null when an input is missing, never 0): spending per resident, change since 2016, regional roads share, and winter spending as a share of operating expenses → filter the GeoJSON to GTHA municipalities, fix ring winding for D3 and round coordinates.
+Steps: read winter costs → join the directory on `mun-id` → compute measures (null when an input is missing, never 0): spending per resident, spending per km of road, change since 2016, and winter spending as a share of operating expenses → filter the GeoJSON to GTHA municipalities, fix ring winding for D3 and round coordinates.
 
 Outputs: `src/data/municipal-metrics.json` (bundled into the page) and `public/data/gtha-boundaries.geojson` (fetched by the map).
 

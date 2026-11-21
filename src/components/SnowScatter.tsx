@@ -20,7 +20,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
     const avg = gthaAverageRecords(records);
     return {
       perResident: d3.mean(avg, (r) => r.spendPerCapita ?? undefined) ?? null,
-      snow: d3.mean(avg, (r) => r.avgSnowCm ?? undefined) ?? null,
+      snow: d3.mean(avg, (r) => r.avgSnowMm ?? undefined) ?? null,
     };
   }, [records]);
 
@@ -35,7 +35,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
   const innerW = Math.max(0, width - M.left - M.right);
   const x = d3
     .scaleLinear()
-    .domain(d3.extent(points, (p) => p.avgSnowCm) as [number, number])
+    .domain(d3.extent(points, (p) => p.avgSnowMm) as [number, number])
     .nice()
     .range([M.left, M.left + innerW]);
   const y = d3
@@ -60,7 +60,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
     .filter((p) => labelled.has(p.munId))
     .sort((a, b) => y(a.perResident) - y(b.perResident))
     .map((p) => {
-      const lx = x(p.avgSnowCm) + r(p.population) + 4;
+      const lx = x(p.avgSnowMm) + r(p.population) + 4;
       const w = p.name.length * 6.5;
       let ly = y(p.perResident);
       while (placed.some((q) => Math.abs(q.y - ly) < LINE && lx < q.x + q.w && q.x < lx + w)) ly += LINE;
@@ -74,7 +74,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
         <h2 id="scatter-title" className="text-base font-semibold">
           Snowfall and spending, {years[0]} to {years.at(-1)}
         </h2>
-        <p className="text-xs text-ink-2">Do snowier places spend more?</p>
+        <p className="text-xs italic text-ink-2">Do snowier places spend more?</p>
       </div>
       <div ref={wrapRef}>
         {width > 0 && (
@@ -110,7 +110,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
                   strokeOpacity={0.6}
                 />
                 <text x={x(gtha.snow) + 4} y={M.top + 4} dy="0.32em" fontSize={11} fill="#b5461a">
-                  GTHA avg {Math.round(gtha.snow)} cm
+                  GTHA avg {Math.round(gtha.snow)} mm
                 </text>
               </g>
             )}
@@ -140,7 +140,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
               </g>
             )}
             <text x={M.left + innerW / 2} y={H - 6} textAnchor="middle" fontSize={11} fill="#4a6a88">
-              Average snowfall per year (estimated, cm)
+              Average snowfall per year (estimated, mm)
             </text>
             <text
               transform={`translate(14 ${M.top + (H - M.top - M.bottom) / 2}) rotate(-90)`}
@@ -155,7 +155,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
               .map((p) => (
                 <circle
                   key={p.munId}
-                  cx={x(p.avgSnowCm)}
+                  cx={x(p.avgSnowMm)}
                   cy={y(p.perResident)}
                   r={r(p.population)}
                   fill="#2f4d6a"
@@ -163,7 +163,7 @@ export default function SnowScatter({ records }: { records: MunicipalRecord[] })
                   stroke="#ffffff"
                   strokeWidth={1}
                 >
-                  <title>{`${p.name}: ${Math.round(p.avgSnowCm)} cm of snow, $${Math.round(p.perResident)} per resident`}</title>
+                  <title>{`${p.name}: ${Math.round(p.avgSnowMm)} mm of snow, $${Math.round(p.perResident)} per resident`}</title>
                 </circle>
               ))}
             {labels.map((p) => (

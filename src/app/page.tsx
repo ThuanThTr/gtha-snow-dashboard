@@ -28,10 +28,11 @@ import type { MetricsFile } from "@/lib/types";
 /** Measures offered in the map dropdown, in display order. */
 const DROPDOWN_METRICS: MetricKey[] = [
   "spendPerCapita",
+  "spendPerKm",
   "totalExpenses",
   "winterShareOfOperating",
   "changeSince2016",
-  "avgSnowCm",
+  "avgSnowMm",
 ];
 
 const data = metricsJson as MetricsFile;
@@ -269,7 +270,7 @@ export default function Page() {
               {geoError ? "Could not load the boundary file." : "Loading map…"}
             </div>
           )}
-          <p className="pointer-events-none absolute top-3 left-3 max-w-[calc(100%-4.5rem)] rounded bg-panel/90 px-2 py-1 text-xs text-ink-2">
+          <p className="pointer-events-none absolute top-3 left-3 max-w-[calc(100%-4.5rem)] rounded bg-panel/90 px-2 py-1 text-xs italic text-ink-2">
             Click a municipality to set comparison <strong>{nextSlot}</strong>
           </p>
         </section>

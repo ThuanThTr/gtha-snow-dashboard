@@ -1,9 +1,10 @@
 import type { MunicipalRecord } from "@/lib/types";
 import { areaLabel, areaSummaries } from "@/lib/insights";
 
-/** Spending per resident for the six areas in one year, as simple horizontal bars. */
+/** Spending per resident for the six areas in one year. */
 export default function AreaComparison({ records, year }: { records: MunicipalRecord[]; year: number }) {
-  const areas = areaSummaries(records.filter((r) => r.year === year));
+  const yearRecords = records.filter((r) => r.year === year);
+  const areas = areaSummaries(yearRecords);
   const max = Math.max(...areas.map((a) => a.perResident ?? 0), 1);
 
   return (
@@ -31,7 +32,7 @@ export default function AreaComparison({ records, year }: { records: MunicipalRe
         ))}
       </ul>
       {areas.some((a) => a.perResident != null && a.reportedCount < a.totalCount) && (
-        <p className="text-xs text-ink-2">
+        <p className="text-xs italic text-ink-2">
           Not every municipality reported for {year}:{" "}
           {areas
             .filter((a) => a.perResident != null && a.reportedCount < a.totalCount)

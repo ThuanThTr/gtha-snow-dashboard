@@ -13,24 +13,24 @@ interface Card {
 function buildCards(records: MunicipalRecord[]): Card[] {
   const cards: Card[] = [];
   const years = yearSummaries(records);
-  const upToHeadline = years.filter((s) => s.year <= HEADLINE_YEAR && s.perResident != null && s.avgSnowCm != null);
+  const upToHeadline = years.filter((s) => s.year <= HEADLINE_YEAR && s.perResident != null && s.avgSnowMm != null);
   const first = upToHeadline[0];
   const headline = upToHeadline.find((s) => s.year === HEADLINE_YEAR);
 
   if (first && headline && first.year !== headline.year) {
-    const snows = upToHeadline.map((s) => s.avgSnowCm!);
+    const snows = upToHeadline.map((s) => s.avgSnowMm!);
     const rise = headline.perResident! / first.perResident! - 1;
     cards.push({
       title: `Up ${pct(rise)} since ${first.year}`,
-      body: `Spending per resident rose from ${dollars(first.perResident!)} in ${first.year} to ${dollars(headline.perResident!)} in ${HEADLINE_YEAR}, while average snowfall stayed between ${Math.round(Math.min(...snows))} and ${Math.round(Math.max(...snows))} cm.`,
+      body: `Spending per resident rose from ${dollars(first.perResident!)} in ${first.year} to ${dollars(headline.perResident!)} in ${HEADLINE_YEAR}, while average snowfall stayed between ${Math.round(Math.min(...snows))} and ${Math.round(Math.max(...snows))} mm.`,
     });
 
-    const snowiest = upToHeadline.reduce((a, b) => (b.avgSnowCm! > a.avgSnowCm! ? b : a));
+    const snowiest = upToHeadline.reduce((a, b) => (b.avgSnowMm! > a.avgSnowMm! ? b : a));
     const costliest = upToHeadline.reduce((a, b) => (b.perResident! > a.perResident! ? b : a));
     if (snowiest.year !== costliest.year) {
       cards.push({
         title: "More snow did not mean more spending",
-        body: `The snowiest winter, ${snowiest.year} (${Math.round(snowiest.avgSnowCm!)} cm), cost ${dollars(snowiest.perResident!)} per resident. The most expensive year, ${costliest.year}, cost ${dollars(costliest.perResident!)} with less snow (${Math.round(costliest.avgSnowCm!)} cm).`,
+        body: `The snowiest winter, ${snowiest.year} (${Math.round(snowiest.avgSnowMm!)} mm), cost ${dollars(snowiest.perResident!)} per resident. The most expensive year, ${costliest.year}, cost ${dollars(costliest.perResident!)} with less snow (${Math.round(costliest.avgSnowMm!)} mm).`,
       });
     }
   }
@@ -50,21 +50,9 @@ function buildCards(records: MunicipalRecord[]): Card[] {
   const low = areas.at(-1);
   if (high && low && high.area !== low.area) {
     const span = `${years[0]!.year} to ${years.at(-1)!.year}`;
-    const headlineRecords = records.filter((r) => r.year === HEADLINE_YEAR && r.totalExpenses != null);
-    const regionalShare = (area: string) => {
-      const rs = headlineRecords.filter((r) => r.area === area);
-      const total = rs.reduce((s, r) => s + r.totalExpenses!, 0);
-      return total === 0 ? null : rs.reduce((s, r) => s + (r.regionalCost ?? 0), 0) / total;
-    };
-    const highShare = regionalShare(high.area);
-    const lowShare = regionalShare(low.area);
     cards.push({
       title: `${areaLabel(high.area)} spends the most per resident`,
-      body:
-        `From ${span}, municipalities in ${areaLabel(high.area)} spent ${dollars(high.perResident!)} per resident on average, and ${areaLabel(low.area)} ${dollars(low.perResident!)}.` +
-        (highShare && lowShare
-          ? ` Regional roads were ${pct(highShare)} of the bill in ${areaLabel(high.area)} in ${HEADLINE_YEAR}, against ${pct(lowShare)} in ${areaLabel(low.area)}.`
-          : ""),
+      body: `From ${span}, municipalities in ${areaLabel(high.area)} spent ${dollars(high.perResident!)} per resident on average, and ${areaLabel(low.area)} ${dollars(low.perResident!)}.`,
     });
   }
 
